@@ -19,40 +19,41 @@ import net.praqma.clearcase.ucm.entities.Stream;
 import net.praqma.clearcase.ucm.view.GetView;
 import net.praqma.clearcase.ucm.view.SnapshotView;
 import net.praqma.clearcase.ucm.view.UpdateView;
-import net.praqma.clearcase.util.ViewUtils;
 import net.praqma.jenkins.configrotator.ConfigurationRotator;
 
 public class PrepareWorkspace implements FileCallable<SnapshotView> {
 
 	private Project project;
 	private TaskListener listener;
-	private String viewtag;
+	private String jenkinsProjectName;
 	private List<Baseline> baselines;
-	
 
-	public PrepareWorkspace( Project project, List<Baseline> baselines, String viewtag, TaskListener listener ) {
+	public PrepareWorkspace( Project project, List<Baseline> baselines, String jenkinsProjectName, TaskListener listener ) {
 		this.project = project;
-		this.viewtag = viewtag;
+		this.jenkinsProjectName = jenkinsProjectName;
 		this.listener = listener;
-		this.baselines = baselines;
-		
+		this.baselines = baselines;		
 	}
-
+    
 	@Override
-	public SnapshotView invoke( File workspace, VirtualChannel channel ) throws IOException, InterruptedException {
+	public SnapshotView invoke( File workspace, VirtualChannel channel ) throws IOException, InterruptedException {        
+        //Viewtag now becomes the jenkinsProjectName + remote computer name
+        String viewtag = jenkinsProjectName + "-" + System.getenv( "COMPUTERNAME" );
 		PrintStream out = listener.getLogger();
+        
+        out.println( String.format( "%sResulting viewtag is: %s", ConfigurationRotator.LOGGERNAME, viewtag ) );
+        
 		SnapshotView view = null;
 		File viewroot = new File( workspace, "view" );
-		
 					
 		/* Changle stream, if exists */
 		String streamName = viewtag + "@" + project.getPVob();
 		Stream devStream;
+        
 		try {
 			devStream = Stream.get( streamName );
 		} catch( UnableToInitializeEntityException e ) {
 			throw new IOException( "No entity", e );
-
 		}
 		
 		/* If the stream exists, change it */

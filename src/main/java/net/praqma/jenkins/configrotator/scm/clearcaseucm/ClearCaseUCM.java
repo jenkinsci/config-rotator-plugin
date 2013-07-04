@@ -307,10 +307,9 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
             selectedBaselines.add( config.getBaseline() );
         }
 
-        /* Make a view tag*/
-        String viewtag = "cr-" + build.getProject().getDisplayName().replaceAll( "\\s", "_" ) + "-" + System.getenv( "COMPUTERNAME" );
-
-        return workspace.act( new PrepareWorkspace( project, selectedBaselines, viewtag, listener ) );
+        /* Create a config rotator project name. Later machine name is appended in the resulting viewtag*/
+        String crProjectName = "cr-" + build.getProject().getDisplayName().replaceAll( "\\s", "_" );
+        return workspace.act( new PrepareWorkspace( project, selectedBaselines, crProjectName, listener ) );
 
     }
 

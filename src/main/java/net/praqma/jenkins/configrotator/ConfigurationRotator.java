@@ -122,11 +122,10 @@ public class ConfigurationRotator extends SCM {
             return null;
         }
     }
-
+    
     @Override
     public boolean checkout( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener, File file ) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
-
         out.println( LOGGERNAME + "Version: " + VERSION );
         logger.fine( "Version: " + VERSION );
 
