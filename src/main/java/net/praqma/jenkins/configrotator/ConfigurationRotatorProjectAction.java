@@ -1,22 +1,15 @@
 package net.praqma.jenkins.configrotator;
 
 import hudson.model.AbstractProject;
-import hudson.model.Actionable;
 import hudson.model.ProminentProjectAction;
 import hudson.scm.SCM;
-import jenkins.model.Jenkins;
 
 import java.util.ArrayList;
-import java.util.logging.Logger;
 
 public class ConfigurationRotatorProjectAction implements ProminentProjectAction {
-
-    private static Logger logger = Logger.getLogger( ConfigurationRotatorProjectAction.class.getName() );
-
 	private final AbstractProject<?, ?> project;
 	
 	public ConfigurationRotatorProjectAction( AbstractProject<?, ?> project ) {
-        logger.fine( "Creating a project action for " + project );
 		this.project = project;
 	}
 	

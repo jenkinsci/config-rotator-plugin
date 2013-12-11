@@ -8,14 +8,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.logging.Logger;
 
-
 /**
  *
  * @author Praqma
  */
 public class ConfigRotatorChangeLogEntry extends Entry implements Serializable {
-
-    private static Logger logger = Logger.getLogger( ConfigRotatorChangeLogEntry.class.getName() );
 
     protected ConfigRotatorChangeLogSet parent;
     private String commitMessage;
@@ -29,7 +26,7 @@ public class ConfigRotatorChangeLogEntry extends Entry implements Serializable {
         versions = new ArrayList<ConfigRotatorVersion>();
     }
 
-    public ConfigRotatorChangeLogEntry( String commitMessage, String user, ArrayList<ConfigRotatorVersion> versions ) {
+    public ConfigRotatorChangeLogEntry(String commitMessage, String user, ArrayList<ConfigRotatorVersion> versions) {
         this.commitMessage = commitMessage;
         this.user = user;
         this.versions = versions;
@@ -43,8 +40,8 @@ public class ConfigRotatorChangeLogEntry extends Entry implements Serializable {
     @Override
     public Collection<String> getAffectedPaths() {
         ArrayList<String> strings = new ArrayList<String>();
-        for( ConfigRotatorVersion ccv : getVersions() ) {
-            strings.add( ccv.getFile() );
+        for (ConfigRotatorVersion ccv : getVersions()) {
+            strings.add(ccv.getFile());
         }
         return strings;
     }
@@ -56,8 +53,7 @@ public class ConfigRotatorChangeLogEntry extends Entry implements Serializable {
         return commitMessage;
     }
 
-
-    public void setCommitMessage( String commitMessage ) {
+    public void setCommitMessage(String commitMessage) {
         this.commitMessage = commitMessage;
     }
 
@@ -65,38 +61,37 @@ public class ConfigRotatorChangeLogEntry extends Entry implements Serializable {
         return versions;
     }
 
-
-    public void setVersions( ArrayList<ConfigRotatorVersion> versions ) {
+    public void setVersions(ArrayList<ConfigRotatorVersion> versions) {
         this.versions = versions;
     }
 
-    public void addVersion( ConfigRotatorVersion version ) {
-        versions.add( version );
+    public void addVersion(ConfigRotatorVersion version) {
+        versions.add(version);
     }
 
     public String getUser() {
         return user;
     }
-    
+
     @Override
-	public User getAuthor() {
-		if( user == null ) {
-			return User.getUnknown();
-		}
-        User u = User.get( user );
-		return u;
-	}
-    
+    public User getAuthor() {
+        if (user == null) {
+            return User.getUnknown();
+        }
+        User u = User.get(user);
+        return u;
+    }
+
     public void setUser(String user) {
         this.user = user;
     }
-     
+
     public <T extends ConfigRotatorChangeLogSet> void setParent(T t) {
         this.parent = t;
     }
-    
-    public <T extends ConfigRotatorChangeLogSet>  T getParent(Class<T> type) {
-        return (T)parent;
+
+    public <T extends ConfigRotatorChangeLogSet> T getParent(Class<T> type) {
+        return (T) parent;
     }
 
     public String toString() {

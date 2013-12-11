@@ -13,27 +13,26 @@ import net.praqma.clearcase.ucm.view.SnapshotView;
 
 public class EndView implements FileCallable<Boolean> {
 
-	private SnapshotView view;
-	private TaskListener listener;
+    private SnapshotView view;
+    private TaskListener listener;
 
-	public EndView( SnapshotView view, TaskListener listener ) {
-		this.view = view;
-		this.listener = listener;
-	}
+    public EndView(SnapshotView view, TaskListener listener) {
+        this.view = view;
+        this.listener = listener;
+    }
 
-	@Override
-	public Boolean invoke( File workspace, VirtualChannel channel ) throws IOException, InterruptedException {
-		PrintStream out = listener.getLogger();
+    @Override
+    public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
+        PrintStream out = listener.getLogger();
 
-		try {
-			view.end();
-			view.remove();
-		} catch( ViewException e ) {
-			throw new IOException( "Unable to end view", e );
-		}
-		
-		
-		return true;
-	}
+        try {
+            view.end();
+            view.remove();
+        } catch (ViewException e) {
+            throw new IOException("Unable to end view", e);
+        }
 
+
+        return true;
+    }
 }

@@ -20,8 +20,6 @@ public class GetConfiguration implements FileCallable<ClearCaseUCMConfigurationC
 
     @Override
     public ClearCaseUCMConfigurationComponent invoke( File f, VirtualChannel channel ) throws IOException, InterruptedException {
-        //PrintStream out = listener.getLogger();
-
         try {
             boolean fixed = false;
             if( units[2].trim().equalsIgnoreCase( "manual" ) || units[2].trim().matches( "^\\s*$" ) || units[2].trim().matches( "^(?i)fixed*$" ) || units[2].trim().matches( "^(?i)true*$" ) ) {

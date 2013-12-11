@@ -23,94 +23,87 @@ import net.praqma.jenkins.configrotator.ConfigurationRotator;
 
 public class PrepareWorkspace implements FileCallable<SnapshotView> {
 
-	private Project project;
-	private TaskListener listener;
-	private String jenkinsProjectName;
-	private List<Baseline> baselines;
+    private Project project;
+    private TaskListener listener;
+    private String jenkinsProjectName;
+    private List<Baseline> baselines;
 
-	public PrepareWorkspace( Project project, List<Baseline> baselines, String jenkinsProjectName, TaskListener listener ) {
-		this.project = project;
-		this.jenkinsProjectName = jenkinsProjectName;
-		this.listener = listener;
-		this.baselines = baselines;		
-	}
-    
-	@Override
-	public SnapshotView invoke( File workspace, VirtualChannel channel ) throws IOException, InterruptedException {        
+    public PrepareWorkspace(Project project, List<Baseline> baselines, String jenkinsProjectName, TaskListener listener) {
+        this.project = project;
+        this.jenkinsProjectName = jenkinsProjectName;
+        this.listener = listener;
+        this.baselines = baselines;
+    }
+
+    @Override
+    public SnapshotView invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
         //Viewtag now becomes the jenkinsProjectName + remote computer name
-        String viewtag = jenkinsProjectName + "-" + System.getenv( "COMPUTERNAME" );
-		PrintStream out = listener.getLogger();
-        
-        out.println( String.format( "%sResulting viewtag is: %s", ConfigurationRotator.LOGGERNAME, viewtag ) );
-        
-		SnapshotView view = null;
-		File viewroot = new File( workspace, "view" );
-					
-		/* Changle stream, if exists */
-		String streamName = viewtag + "@" + project.getPVob();
-		Stream devStream;
-        
-		try {
-			devStream = Stream.get( streamName );
-		} catch( UnableToInitializeEntityException e ) {
-			throw new IOException( "No entity", e );
-		}
-		
-		/* If the stream exists, change it */
-		if( devStream.exists() ) {
-			out.println( ConfigurationRotator.LOGGERNAME + "Stream exists" );
+        String viewtag = jenkinsProjectName + "-" + System.getenv("COMPUTERNAME");
+        PrintStream out = listener.getLogger();
+
+        out.println(String.format("%sResulting viewtag is: %s", ConfigurationRotator.LOGGERNAME, viewtag));
+
+        SnapshotView view = null;
+        File viewroot = new File(workspace, "view");
+
+        /* Changle stream, if exists */
+        String streamName = viewtag + "@" + project.getPVob();
+        Stream devStream;
+
+        try {
+            devStream = Stream.get(streamName);
+        } catch (UnableToInitializeEntityException e) {
+            throw new IOException("No entity", e);
+        }
+
+        /* If the stream exists, change it */
+        if (devStream.exists()) {
+            out.println(ConfigurationRotator.LOGGERNAME + "Stream exists");
 
             try {
-                view = new GetView( viewroot, viewtag ).get();
-            } catch( ClearCaseException e ) {
-                throw new IOException( "Could not get view", e );
+                view = new GetView(viewroot, viewtag).get();
+            } catch (ClearCaseException e) {
+                throw new IOException("Could not get view", e);
             }
 
             try {
-                out.println( ConfigurationRotator.LOGGERNAME + "Rebasing stream to " + devStream.getNormalizedName() );
-                //Rebase rebase = new Rebase( devStream, view, baselines );
-                //view.end();
-                new Rebase( devStream ).setViewTag( viewtag ).addBaselines( baselines ).dropFromStream().rebase( true );
-                //new Rebase( view ).addBaselines( baselines ).dropFromStream().rebase( true );
-            } catch( ClearCaseException e ) {
-                throw new IOException( "Could not load " + devStream, e );
+                out.println(ConfigurationRotator.LOGGERNAME + "Rebasing stream to " + devStream.getNormalizedName());
+                new Rebase(devStream).setViewTag(viewtag).addBaselines(baselines).dropFromStream().rebase(true);                
+            } catch (ClearCaseException e) {
+                throw new IOException("Could not load " + devStream, e);
             }
-			
-			/* The view */
-			try {
-                out.println( ConfigurationRotator.LOGGERNAME + "View root: " + new File( workspace, "view" ) );
-                out.println( ConfigurationRotator.LOGGERNAME + "View tag : " + viewtag );
-				//view = ViewUtils.createView( devStream, "ALL", new File( workspace, "view" ), viewtag, true );
 
-                new ConfigSpec( viewroot ).addLoadRule( baselines ).generate().appy();
+            /* The view */
+            try {
+                out.println(ConfigurationRotator.LOGGERNAME + "View root: " + new File(workspace, "view"));
+                out.println(ConfigurationRotator.LOGGERNAME + "View tag : " + viewtag);
+                new ConfigSpec(viewroot).addLoadRule(baselines).generate().appy();
+                new UpdateView(view).swipe().overwrite().update();
+            } catch (ClearCaseException e) {
+                throw new IOException("Unable to create view", e);
+            }
 
-                new UpdateView( view ).swipe().overwrite().update();
-			} catch( ClearCaseException e ) {
-				throw new IOException( "Unable to create view", e );
-			}
+        } else {
+            /* Create new */
 
-		} else {
-			/* Create new */
-			
-			out.println( ConfigurationRotator.LOGGERNAME + "Creating a new environment" );
-			
-			try {
-				out.println( ConfigurationRotator.LOGGERNAME + "Creating new stream" );
-				devStream = Stream.create( project.getIntegrationStream(), streamName, true, baselines );
-			} catch( ClearCaseException e1 ) {
-				throw new IOException( "Unable to create stream " + streamName, e1 );
-			}
-			
-			try {
-				//view = ViewUtils.createView( devStream, "ALL", new File( workspace, "view" ), viewtag, true );
-                view = new GetView( viewroot, viewtag ).setStream( devStream ).createIfAbsent().get();
-                new UpdateView( view ).setLoadRules( new SnapshotView.LoadRules( view, SnapshotView.Components.ALL ) ).generate().update();
-			} catch( ClearCaseException e ) {
-				throw new IOException( "Unable to create view", e );
-			}
-		}
-		
-		return view;
-	}
+            out.println(ConfigurationRotator.LOGGERNAME + "Creating a new environment");
 
+            try {
+                out.println(ConfigurationRotator.LOGGERNAME + "Creating new stream");
+                devStream = Stream.create(project.getIntegrationStream(), streamName, true, baselines);
+            } catch (ClearCaseException e1) {
+                throw new IOException("Unable to create stream " + streamName, e1);
+            }
+
+            try {
+                //view = ViewUtils.createView( devStream, "ALL", new File( workspace, "view" ), viewtag, true );
+                view = new GetView(viewroot, viewtag).setStream(devStream).createIfAbsent().get();
+                new UpdateView(view).setLoadRules(new SnapshotView.LoadRules(view, SnapshotView.Components.ALL)).generate().update();
+            } catch (ClearCaseException e) {
+                throw new IOException("Unable to create view", e);
+            }
+        }
+
+        return view;
+    }
 }

@@ -12,6 +12,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.praqma.clearcase.api.DiffBl;
 
 import net.praqma.clearcase.exceptions.*;
 import net.praqma.clearcase.ucm.entities.Activity;
@@ -205,11 +206,14 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
         List<ClearCaseUCMConfigurationComponent> components = getList();
 
         try {
-            List<Activity> activities = Version.getBaselineDiff( component.getBaseline(), ( other != null ? other.getBaseline() : null ), false, new File( getView().getPath() ) );
-
+            DiffBl differ = new DiffBl(component.getBaseline(), ( other != null ? other.getBaseline() : null ));
+            Activity.Parser parser = new Activity.Parser(differ).setActivityUserAsVersionUser(true).addDirection(Activity.Parser.Direction.RIGHT);
+            //List<Activity> activities = Version.getBaselineDiff( component.getBaseline(), ( other != null ? other.getBaseline() : null ), false, new File( getView().getPath() ) );
+            List<Activity> activities = parser.parse().getActivities();
             for( Activity a : activities ) {
-                ConfigRotatorChangeLogEntry entry = new ConfigRotatorChangeLogEntry( a.getHeadline(), a.getUser(), new ArrayList<ConfigRotatorVersion>() );
-                for( Version v : a.changeset.versions ) {
+                Activity al = a.load();
+                ConfigRotatorChangeLogEntry entry = new ConfigRotatorChangeLogEntry( al.getHeadline(), al.getUser(), new ArrayList<ConfigRotatorVersion>() );
+                for( Version v : al.changeset.versions ) {
                     entry.addVersion( new ConfigRotatorVersion( v.getSFile(), v.getVersion(), v.blame() ) );
                 }
 

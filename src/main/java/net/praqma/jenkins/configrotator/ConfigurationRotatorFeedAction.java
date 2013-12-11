@@ -33,7 +33,6 @@ public abstract class ConfigurationRotatorFeedAction implements Action {
     public abstract String getComponentName();
 
     public String getFeedUrl( String component ) {
-        //return ConfigurationRotator.FEED_URL + getComponentName() + "/feed?component=" + component;
         return Jenkins.getInstance().getRootUrl() + ConfigurationRotator.URL_NAME + "/" + getComponentName() + "/feed?component=" + component;
     }
 
@@ -80,7 +79,7 @@ public abstract class ConfigurationRotatorFeedAction implements Action {
         String component = req.getParameter( "component" );
         File file = new File( new File( ConfigurationRotator.getFeedPath(), getComponentName() ), component + ".xml" );
 
-        if( file != null && file.exists() ) {
+        if( file.exists() ) {
             rsp.serveFile( req, FileUtils.openInputStream( file ), file.lastModified(), file.getTotalSpace(), file.getName() );
         } else {
             rsp.sendError( HttpServletResponse.SC_NOT_FOUND );

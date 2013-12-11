@@ -73,8 +73,6 @@ public class ConfigurationRotator extends SCM {
     static {
         try {
             if( Jenkins.getInstance() != null ) {
-                System.out.println( "JENKINS" + Jenkins.getInstance() );
-                System.out.println( "JENKINS" + Jenkins.getInstance().getRootDir() );
                 FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
                 VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
             } else {
@@ -85,7 +83,7 @@ public class ConfigurationRotator extends SCM {
         }
     }
 
-    public static final File getFeedPath() {
+    public static File getFeedPath() {
         return FEED_PATH;
     }
 
@@ -160,12 +158,8 @@ public class ConfigurationRotator extends SCM {
             if( configuration != null ) {
                 out.println( LOGGERNAME + "Checking configuration(" + configuration.getClass() + ") " + configuration );
                 performer.checkConfiguration( configuration );
-
-                out.println( LOGGERNAME + "Creating workspace" );
                 performer.createWorkspace( configuration );
-
                 performer.save( configuration );
-
                 performResult = true;
 
             }
@@ -201,8 +195,6 @@ public class ConfigurationRotator extends SCM {
                     clw.write( entries );
                 } else {
                     logger.info( "Change log writer not implemented" );
-                    out.println( LOGGERNAME + "Change log writer not implemented" );
-                    entries = Collections.emptyList();
                 }
 
             } catch( Exception e ) {
@@ -239,6 +231,7 @@ public class ConfigurationRotator extends SCM {
     @Override
     protected PollingResult compareRemoteRevisionWith( AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState arg4 ) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
+        logger.fine( VERSION );
         // This little check ensures changes are not found while building, as
         // this with many concurrent builds and polling leads to issues where
         // we saw a build was long in the queue, and when started, the polling found
@@ -251,7 +244,7 @@ public class ConfigurationRotator extends SCM {
             return PollingResult.NO_CHANGES;
         }
 
-        logger.fine( "Version: " + Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion() );
+        
 
         /*
            * Determine if the job was reconfigured
@@ -288,7 +281,6 @@ public class ConfigurationRotator extends SCM {
      */
     @Override
     public ChangeLogParser createChangeLogParser() {
-        logger.fine( "Creating change log parser" );
         return acrs.createChangeLogParser();
     }
 
