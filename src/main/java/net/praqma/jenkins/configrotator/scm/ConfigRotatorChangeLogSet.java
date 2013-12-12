@@ -11,12 +11,10 @@ import java.util.List;
  * @author Praqma
  */
 public class ConfigRotatorChangeLogSet<T extends ConfigRotatorChangeLogEntry> extends ChangeLogSet<T> {
-    
-    
+     
     protected List<T> entries;
     protected String headline;
     public static final String EMPTY_DESCRIPTOR = "New configuration - No changes";
-
 
     public ConfigRotatorChangeLogSet( AbstractBuild<?, ?> build, List<T> entries ) {
         super(build);

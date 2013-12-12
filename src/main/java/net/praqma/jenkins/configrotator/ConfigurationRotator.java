@@ -40,19 +40,9 @@ public class ConfigurationRotator extends SCM {
     private static Logger logger = Logger.getLogger( ConfigurationRotator.class.getName() );
 
     public enum ResultType {
-
-        /*
-           * Tested and configuration is compatible
-           */
         COMPATIBLE,
-
-        /*
-           * Tested and configuration is NOT compatible
-           */
         INCOMPATIBLE,
-
         FAILED,
-
         /*
            * The tests failed and was unable to determine compatibility
            */
@@ -164,8 +154,7 @@ public class ConfigurationRotator extends SCM {
 
             }
         } catch( Exception e ) {
-            logger.log( Level.SEVERE, "Unable to create configuration", e );
-            e.printStackTrace( out );
+            logger.log( Level.SEVERE, "Unable to create configuration", e );            
             DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die );
             build.addAction( da );
             throw new AbortException( e.getMessage() );

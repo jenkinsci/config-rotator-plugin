@@ -7,8 +7,7 @@ public class ConfigRotatorVersion implements Serializable {
     private String name;
     private String user;
 
-    public ConfigRotatorVersion() {
-    }
+    public ConfigRotatorVersion() { }
 
     public ConfigRotatorVersion( String file, String name, String user ) {
         this.file = file;

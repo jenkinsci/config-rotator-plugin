@@ -17,9 +17,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public abstract class ConfigurationRotatorFeedAction implements Action {
-
-    private static Logger logger = Logger.getLogger( ConfigurationRotatorFeedAction.class.getName() );
-
+    
     @Override
     public String getIconFileName() {
         return null;
@@ -73,7 +71,6 @@ public abstract class ConfigurationRotatorFeedAction implements Action {
 
         return list;
     }
-
 
     public void doFeed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         String component = req.getParameter( "component" );

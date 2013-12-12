@@ -206,8 +206,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
      * @throws IOException
      * @throws ConfigurationRotatorException
      * @throws InterruptedException
-     */
-    //public abstract void writeChangeLog( File changeLogFile, BuildListener listener, AbstractBuild<?, ?> build ) throws IOException, ConfigurationRotatorException, InterruptedException;
+     */    
     public abstract AbstractConfigurationRotatorSCM.ChangeLogWriter getChangeLogWriter(File changeLogFile, BuildListener listener, AbstractBuild<?, ?> build);
 
     public abstract class ChangeLogWriter<C extends AbstractConfigurationComponent, T extends AbstractConfiguration<C>> {

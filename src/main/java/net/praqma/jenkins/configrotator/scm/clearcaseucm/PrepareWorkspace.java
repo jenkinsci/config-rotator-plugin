@@ -96,7 +96,6 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
             }
 
             try {
-                //view = ViewUtils.createView( devStream, "ALL", new File( workspace, "view" ), viewtag, true );
                 view = new GetView(viewroot, viewtag).setStream(devStream).createIfAbsent().get();
                 new UpdateView(view).setLoadRules(new SnapshotView.LoadRules(view, SnapshotView.Components.ALL)).generate().update();
             } catch (ClearCaseException e) {

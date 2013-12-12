@@ -149,10 +149,8 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
      */
     private void writeFeedToFile( Feed feed, File feedFile ) throws FeedException {
         Writer writer = null;
-        try {
-            /* First check if the feed file exists */
-            if( !feedFile.exists() ) {
-                /* ... Then the folder */
+        try {            
+            if( !feedFile.exists() ) {                
                 if( !feedFile.getParentFile().exists() ) {
                     // create file including dirs
                     if( !feedFile.getParentFile().mkdirs() ) {

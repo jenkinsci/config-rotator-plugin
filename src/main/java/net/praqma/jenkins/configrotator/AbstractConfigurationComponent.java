@@ -42,13 +42,7 @@ public abstract class AbstractConfigurationComponent implements Serializable, Fe
 
     public abstract String prettyPrint();
 
-
-    /*
-    *
-    *   Feed specifics
-    *
-    */
-
+    @Override
     public File getFeedFile( File path ) {
         return new File( path, ConfigurationRotatorReport.urlTtransform( getComponentName() ) + ".xml" );
     }
@@ -61,7 +55,8 @@ public abstract class AbstractConfigurationComponent implements Serializable, Fe
 
         return feed;
     }
-
+    
+    @Override
     public Entry getFeedEntry( AbstractBuild<?, ?> build, Date updated ) {
         ConfigurationRotatorBuildAction action = build.getAction( ConfigurationRotatorBuildAction.class );
         AbstractConfiguration configuration = action.getConfigurationWithOutCast();

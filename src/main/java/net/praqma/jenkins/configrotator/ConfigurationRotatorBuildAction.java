@@ -32,8 +32,7 @@ public class ConfigurationRotatorBuildAction implements Action {
 	public void doReset( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
 		SCM scm = build.getProject().getScm();
 		if( scm instanceof ConfigurationRotator ) {
-			((ConfigurationRotator)scm).setConfigurationByAction( build.getProject(), this );
-			//rsp.forwardToPreviousPage( req. );
+			((ConfigurationRotator)scm).setConfigurationByAction( build.getProject(), this );			
 			rsp.sendRedirect( "../../" );
 		} else {
 			rsp.sendError( StaplerResponse.SC_BAD_REQUEST, "Not a Configuration Rotator job" );

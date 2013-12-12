@@ -59,8 +59,6 @@ public class ResolveChangeLog implements FilePath.FileCallable<ConfigRotatorChan
             entry.addVersion( new ConfigRotatorVersion( diff.getNewPath(), "", commit.getAuthorIdent().getName() ) );
         }
 
-        logger.fine("ENTRY: " + entry);
-
         return entry;
     }
 

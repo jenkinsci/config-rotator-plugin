@@ -8,14 +8,11 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
-import hudson.util.FormValidation;
 
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-
-import javax.servlet.ServletException;
 
 import net.praqma.clearcase.PVob;
 import net.praqma.clearcase.ucm.entities.Baseline;
@@ -33,13 +30,14 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
+import net.praqma.clearcase.exceptions.UCMEntityNotInitializedException;
 
 import net.praqma.clearcase.ucm.entities.Component;
 
 public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Serializable {
 
-    private static Logger logger = Logger.getLogger( ClearCaseUCM.class.getName() );
-
+    private static final Logger logger = Logger.getLogger( ClearCaseUCM.class.getName() );   
     public List<ClearCaseUCMTarget> targets;
 
     private PVob pvob;
@@ -141,7 +139,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         @Override
         public void checkConfiguration( ClearCaseUCMConfiguration configuration ) throws ConfigurationRotatorException {
                simpleCheckOfConfiguration( configuration );
-
         }
 
         @Override
@@ -182,10 +179,12 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         try {
             inputconfiguration = ClearCaseUCMConfiguration.getConfigurationFromTargets( getTargets(), workspace, listener );
         } catch( ConfigurationRotatorException e ) {
-            out.println( ConfigurationRotator.LOGGERNAME + "Unable to parse configuration: " + e.getMessage() );
-            throw new AbortException();
+            if(e.getCause() != null && e.getCause() instanceof UCMEntityNotInitializedException) {                
+                throw new AbortException(String.format("Reconfigure failed. UCM Entity could not be loaded.%n%s", e.getCause().getMessage() ));
+            } else {
+                throw new AbortException(String.format("Reconfigure failed.%n%s", ConfigurationRotator.LOGGERNAME + "Unable to parse configuration: " + e.getMessage() ));                
+            }            
         }
-
         projectConfiguration = inputconfiguration;
     }
 
@@ -204,7 +203,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         }
     }
 
-
     /**
      * Does a simple check of the config-rotator configuration.
      * We do implicitly assume the configuration can be loaded and clear case objects
@@ -215,8 +213,8 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
      * @param cfg config rotator configuration
      * @throws AbortException
      */
+    
     public void simpleCheckOfConfiguration( AbstractConfiguration cfg ) throws ConfigurationRotatorException {
-        logger.finer( "Checking configuration " + cfg );
         if( cfg instanceof ClearCaseUCMConfiguration ) {
             ClearCaseUCMConfiguration config = (ClearCaseUCMConfiguration) cfg;
             Set<Component> ccucmcfgset = new HashSet<Component>();
@@ -395,10 +393,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         @Override
         public String getFeedComponentName() {
             return ClearCaseUCM.class.getSimpleName();
-        }
-
-        public FormValidation doTest() throws IOException, ServletException {
-            return FormValidation.ok();
         }
 
         @Override

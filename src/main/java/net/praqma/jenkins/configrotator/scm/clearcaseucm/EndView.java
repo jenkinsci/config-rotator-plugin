@@ -22,17 +22,13 @@ public class EndView implements FileCallable<Boolean> {
     }
 
     @Override
-    public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {
-        PrintStream out = listener.getLogger();
-
+    public Boolean invoke(File workspace, VirtualChannel channel) throws IOException, InterruptedException {        
         try {
             view.end();
             view.remove();
         } catch (ViewException e) {
             throw new IOException("Unable to end view", e);
         }
-
-
         return true;
     }
 }
