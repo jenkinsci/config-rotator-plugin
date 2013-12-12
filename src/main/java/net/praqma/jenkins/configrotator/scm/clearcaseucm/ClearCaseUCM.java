@@ -31,6 +31,7 @@ import org.kohsuke.stapler.StaplerRequest;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.praqma.clearcase.ucm.entities.Component;
@@ -94,9 +95,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         List<ClearCaseUCMTarget> list = getConfigurationAsTargets( configuration );
         for( int i = 0; i < targets.size(); ++i ) {
             if( !targets.get( i ).equals( list.get( i ) ) ) {
-                logger.finest( "Config: " + list.get( i ) );
-                logger.finest( "Target: " + targets.get( i ) );
-                logger.fine( "Configuration was not equal" );
                 return true;
             }
         }
@@ -105,9 +103,16 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         return false;
     }
 
+    /**
+     * @param project
+     * @param launcher
+     * @param workspace
+     * @param listener
+     * @return a poller for the scm.
+     */
     @Override
     public Poller getPoller( AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener ) {
-        return new Poller(project, launcher, workspace, listener );
+        return new Poller(project, launcher, workspace, listener, false );
     }
 
 
@@ -148,9 +153,10 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
                 configuration.setView( view );
             } catch( Exception e ) {
                 out.println( ConfigurationRotator.LOGGERNAME + "Unable to create view" );
-                logger.fine( ConfigurationRotator.LOGGERNAME + "Unable to create view, message is: "
-                        + e.getMessage() + ". Cause was: " + ( e.getCause() == null ? "unknown" : e.getCause().getMessage() ) );
-                throw new ConfigurationRotatorException( "Unable to create view", e );
+                
+                ConfigurationRotatorException ex = new ConfigurationRotatorException( "Unable to create view", e ); 
+                logger.log(Level.SEVERE, "Unable to create view in createWorkspace()", ex);
+                throw ex;
             }
         }
 
@@ -257,7 +263,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         for( ClearCaseUCMConfigurationComponent config : nconfig.getList() ) {
             /* This configuration is not fixed */
             if( !config.isFixed() ) {
-                logger.fine( ConfigurationRotator.LOGGERNAME + "Wasn't fixed: " + config.getBaseline().getNormalizedName() );
 
                 try {
                     //current = workspace.act( new GetBaselines( listener, config.getBaseline().getComponent(), config.getBaseline().getStream(), config.getPlevel(), 1, config.getBaseline() ) ).get( 0 ); //.get(0) newest baseline, they are sorted!

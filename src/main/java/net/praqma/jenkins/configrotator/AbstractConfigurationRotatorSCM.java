@@ -54,6 +54,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
         protected Launcher launcher;
         protected FilePath workspace;
         protected TaskListener listener;
+        protected boolean canPollWhileBuilding = true;
 
         public Poller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
             this.project = project;
@@ -61,10 +62,30 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
             this.workspace = workspace;
             this.listener = listener;
         }
+        
+        /**
+         * New constructor. Introduced a field that marks the SCM capable of polling while the project is building.
+         * @param project
+         * @param launcher
+         * @param workspace
+         * @param listener
+         * @param canPollWhileBuilding 
+         */
+        public Poller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, boolean canPollWhileBuilding) {
+            this.project = project;
+            this.launcher = launcher;
+            this.workspace = workspace;
+            this.listener = listener;
+            this.canPollWhileBuilding = canPollWhileBuilding;
+        }
 
         public PollingResult poll(ConfigurationRotatorBuildAction action) throws AbortException {
             PrintStream out = listener.getLogger();
             logger.fine(ConfigurationRotator.LOGGERNAME + "Polling started");
+            
+            if(!canPollWhileBuilding && project.isBuilding()) {
+                return PollingResult.NO_CHANGES;
+            }
 
             C configuration = action.getConfiguration();
 
