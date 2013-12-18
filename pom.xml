@@ -406,13 +406,13 @@
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>cool</artifactId>
-            <version>0.6.25</version>
+            <version>0.6.27</version>
         </dependency>
 
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>cool</artifactId>
-            <version>0.6.25</version>
+            <version>0.6.27</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
