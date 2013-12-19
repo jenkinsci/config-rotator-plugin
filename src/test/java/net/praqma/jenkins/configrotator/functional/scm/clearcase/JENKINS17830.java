@@ -20,13 +20,14 @@ import org.junit.rules.TestRule;
 
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.apache.commons.lang.SystemUtils;
 
 /**
  * @author cwolfgang
  */
 public class JENKINS17830 {
 
-    private static Logger logger = Logger.getLogger( JENKINS17830.class.getName() );
+    private static final Logger logger = Logger.getLogger( JENKINS17830.class.getName() );
 
     public static ClearCaseRule ccenv = new ClearCaseRule( "JENKINS17830", "setup-rootless.xml" );
 
@@ -40,14 +41,17 @@ public class JENKINS17830 {
 
     @Test
     public void test() throws IOException, InterruptedException {
+        
+        String uniqueName = ccenv.getUniqueName();
+        
         ProjectBuilder builder = new ProjectBuilder( new ClearCaseUCM( ccenv.getPVob() ) ).setName( "config-spec" );
         ConfigRotatorProject project = builder.getProject();
         project.addTarget( new ClearCaseUCMTarget( "a-baseline-1@" + ccenv.getPVob() + ", INITIAL, false" ) ).
                 addTarget( new ClearCaseUCMTarget( "b-baseline-1@" + ccenv.getPVob() + ", INITIAL, false" ) );
 
         AbstractBuild<?, ?> build = crrule.buildProject( project.getJenkinsProject(), false, null );
-
-        FilePath path = new FilePath( project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor( (FreeStyleProject)project.getJenkinsProject() ), "view/" + ccenv.getUniqueName() );
+        String vobadd = SystemUtils.IS_OS_UNIX ? "vobs/" : "";
+        FilePath path = new FilePath( project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor( (FreeStyleProject)project.getJenkinsProject() ), "view/" + vobadd + uniqueName );
         listPath( path );
 
         SystemValidator<ClearCaseUCMTarget> val = new SystemValidator<ClearCaseUCMTarget>( build );
@@ -80,9 +84,13 @@ public class JENKINS17830 {
     }
 
     protected void listPath( FilePath path ) throws IOException, InterruptedException {
-        logger.info( "Listing " + path + "(" + path.exists() + ")" );
-        for( FilePath f : path.list() ) {
-            logger.info( " * " + f );
+        if(path != null) {
+            logger.info( "Listing " + path + "(" + path.exists() + ")" );
+            if(path.exists()) {
+                for( FilePath f : path.list() ) {
+                    logger.info( " * " + f );
+                }
+            }
         }
     }
 }

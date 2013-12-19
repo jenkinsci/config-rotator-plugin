@@ -229,6 +229,7 @@
                                 <include>net/praqma/jenkins/configrotator/functional/scm/clearcase/*.java</include>
                                 <include>net/praqma/jenkins/configrotator/functional/ModelTest.java</include>
                                 <include>net/praqma/jenkins/configrotator/functional/scm/git/*.java</include>
+                                <include>net/praqma/jenkins/configrotator/unit/**/*.java</include>
                             </includes>
                         </configuration>
                     </plugin>
