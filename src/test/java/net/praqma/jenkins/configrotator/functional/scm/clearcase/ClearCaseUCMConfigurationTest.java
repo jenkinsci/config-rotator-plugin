@@ -104,30 +104,4 @@ public class ClearCaseUCMConfigurationTest extends TestCase {
         ClearCaseUCMConfiguration configuration = new ClearCaseUCMConfiguration();
         Assert.assertNotNull(configuration.toHtml());
     }
-
-    /*
-    public void testDifferenceFunctionn() throws UnableToInitializeEntityException {
-        ClearCaseUCMConfiguration configuration = new ClearCaseUCMConfiguration();
-        configuration.getList().add(new ClearCaseUCMConfigurationComponent(Baseline.get("bl1@\\pvob"), Project.PromotionLevel.INITIAL, false));
-        configuration.getList().get(0).setChangedLast(false);
-        
-        ClearCaseUCMConfiguration configuration2 = new ClearCaseUCMConfiguration();
-        configuration2.getList().add(new ClearCaseUCMConfigurationComponent(Baseline.get("bl2@\\pvob"), Project.PromotionLevel.INITIAL, false));
-        
-        //No differences
-        
-        boolean caught = false;
-        try {
-            Assert.assertEquals(0, configuration.difference(configuration2.getList().get( 0 ), null).size());
-            
-            configuration.getList().get(0).setChangedLast(true);
-            
-            configuration.difference(configuration2.getList().get( 0 ), null);
-            
-        } catch (ConfigurationRotatorException ex) {
-            caught = true;
-        }
-        assertTrue(caught); 
-    }
-    */
 }

@@ -105,7 +105,6 @@ public class GitConfigurationComponent extends AbstractConfigurationComponent {
 
     @Override
     public String toString() {
-        //return "GitComponent[" + name + ": " + repository + ", " + branch + ", " + commitId + "]";
         return "GC[" + commitId + "]";
     }
 

@@ -17,9 +17,7 @@ import java.util.*;
 import java.util.logging.Logger;
 
 public abstract class ConfigurationRotatorFeedAction implements Action {
-
-    private static Logger logger = Logger.getLogger( ConfigurationRotatorFeedAction.class.getName() );
-
+    
     @Override
     public String getIconFileName() {
         return null;
@@ -33,7 +31,6 @@ public abstract class ConfigurationRotatorFeedAction implements Action {
     public abstract String getComponentName();
 
     public String getFeedUrl( String component ) {
-        //return ConfigurationRotator.FEED_URL + getComponentName() + "/feed?component=" + component;
         return Jenkins.getInstance().getRootUrl() + ConfigurationRotator.URL_NAME + "/" + getComponentName() + "/feed?component=" + component;
     }
 
@@ -75,12 +72,11 @@ public abstract class ConfigurationRotatorFeedAction implements Action {
         return list;
     }
 
-
     public void doFeed( StaplerRequest req, StaplerResponse rsp ) throws IOException, ServletException {
         String component = req.getParameter( "component" );
         File file = new File( new File( ConfigurationRotator.getFeedPath(), getComponentName() ), component + ".xml" );
 
-        if( file != null && file.exists() ) {
+        if( file.exists() ) {
             rsp.serveFile( req, FileUtils.openInputStream( file ), file.lastModified(), file.getTotalSpace(), file.getName() );
         } else {
             rsp.sendError( HttpServletResponse.SC_NOT_FOUND );

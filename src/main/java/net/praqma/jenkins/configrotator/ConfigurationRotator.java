@@ -40,19 +40,9 @@ public class ConfigurationRotator extends SCM {
     private static Logger logger = Logger.getLogger( ConfigurationRotator.class.getName() );
 
     public enum ResultType {
-
-        /*
-           * Tested and configuration is compatible
-           */
         COMPATIBLE,
-
-        /*
-           * Tested and configuration is NOT compatible
-           */
         INCOMPATIBLE,
-
         FAILED,
-
         /*
            * The tests failed and was unable to determine compatibility
            */
@@ -73,8 +63,6 @@ public class ConfigurationRotator extends SCM {
     static {
         try {
             if( Jenkins.getInstance() != null ) {
-                System.out.println( "JENKINS" + Jenkins.getInstance() );
-                System.out.println( "JENKINS" + Jenkins.getInstance().getRootDir() );
                 FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
                 VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
             } else {
@@ -85,7 +73,7 @@ public class ConfigurationRotator extends SCM {
         }
     }
 
-    public static final File getFeedPath() {
+    public static File getFeedPath() {
         return FEED_PATH;
     }
 
@@ -160,18 +148,13 @@ public class ConfigurationRotator extends SCM {
             if( configuration != null ) {
                 out.println( LOGGERNAME + "Checking configuration(" + configuration.getClass() + ") " + configuration );
                 performer.checkConfiguration( configuration );
-
-                out.println( LOGGERNAME + "Creating workspace" );
                 performer.createWorkspace( configuration );
-
                 performer.save( configuration );
-
                 performResult = true;
 
             }
         } catch( Exception e ) {
-            logger.log( Level.SEVERE, "Unable to create configuration", e );
-            e.printStackTrace( out );
+            logger.log( Level.SEVERE, "Unable to create configuration", e );            
             DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die );
             build.addAction( da );
             throw new AbortException( e.getMessage() );
@@ -201,8 +184,6 @@ public class ConfigurationRotator extends SCM {
                     clw.write( entries );
                 } else {
                     logger.info( "Change log writer not implemented" );
-                    out.println( LOGGERNAME + "Change log writer not implemented" );
-                    entries = Collections.emptyList();
                 }
 
             } catch( Exception e ) {
@@ -239,20 +220,19 @@ public class ConfigurationRotator extends SCM {
     @Override
     protected PollingResult compareRemoteRevisionWith( AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState arg4 ) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
+        logger.fine( VERSION );
         // This little check ensures changes are not found while building, as
         // this with many concurrent builds and polling leads to issues where
         // we saw a build was long in the queue, and when started, the polling found
         // changed a did schedule the same build with the same changes as last time
         // between the last one started and finished.
-        //Basically this disables polling while the job has a build in the queue.
+        // Basically this disables polling while the job has a build in the queue.
         if( project.isInQueue() ) {
             out.println( "A build already in queue - cancelling poll" );
             logger.fine( "A build already in queue - cancelling poll" );
             return PollingResult.NO_CHANGES;
         }
-
-        logger.fine( "Version: " + Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion() );
-
+    
         /*
            * Determine if the job was reconfigured
            */
@@ -288,7 +268,6 @@ public class ConfigurationRotator extends SCM {
      */
     @Override
     public ChangeLogParser createChangeLogParser() {
-        logger.fine( "Creating change log parser" );
         return acrs.createChangeLogParser();
     }
 

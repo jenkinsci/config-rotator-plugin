@@ -3,8 +3,8 @@ package net.praqma.jenkins.configrotator.scm.clearcaseucm;
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.TaskListener;
-
 import java.io.File;
+
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -31,11 +31,10 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
     }
 
 
+    @Override
     public ClearCaseUCMConfiguration clone() {
         ClearCaseUCMConfiguration n = new ClearCaseUCMConfiguration();
-        n.view = this.view;
 
-        //n.list.addAll( this.list );
         for( ClearCaseUCMConfigurationComponent cc : this.list ) {
             n.list.add( cc.clone() );
         }
@@ -87,27 +86,10 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
                     out.println( ConfigurationRotator.LOGGERNAME + "Error parsing configuration - interrupted: " + e.getMessage() );
                     throw new ConfigurationRotatorException( "Unable parse configuration - interrupted", e );
                 } catch( IOException ioe ) {
-                    // The GetConfiguration above on the slave might throw three
-                    // exception: IOException and InterruptedException.
-                    // The third is ClearCase exception, implicit, as it is packed
-                    // into the IOException as it was not serializeable.
-                    try {
-                        // Regardless of the exception, try get the cause
-                        // to see if there is a ClearCase exception in it somewhere
-                        Exception cce = (Exception) ioe.getCause();
-                        throw cce;
-                    } catch( ClearCaseException cce ) {
-                        // yah, ...
-                        out.println( ConfigurationRotator.LOGGERNAME + "Unable to load with ClearCase: " + cce.getMessage() );
-                        throw new ConfigurationRotatorException( "Unable to load with ClearCase", cce );
-                    } catch( Exception e2 ) {
-                        // nah, just some other exception, but we should still fail
-                        out.println( ConfigurationRotator.LOGGERNAME + "Error parsing configuration - io: " + e2.getMessage() );
-                        throw new ConfigurationRotatorException( "Unable parse configuration - io", e2 );
-                    }
+                    ConfigurationRotatorException configurationRotatorException = new ConfigurationRotatorException( String.format( "Failed to retrieve configuration%n%s", ioe.getCause().getMessage()) );
+                    throw configurationRotatorException;
                 }
             } else {
-                /* Do nothing */
                 out.println( ConfigurationRotator.LOGGERNAME + "\"" + target.getComponent() + "\" was not correct" );
                 throw new ConfigurationRotatorException( "Wrong input, length is " + units.length );
             }
@@ -201,13 +183,10 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
     @Override
     public List<ConfigRotatorChangeLogEntry> difference( ClearCaseUCMConfigurationComponent component, ClearCaseUCMConfigurationComponent other ) throws ConfigurationRotatorException {
         List<ConfigRotatorChangeLogEntry> entries = new LinkedList<ConfigRotatorChangeLogEntry>();
-
-        List<ClearCaseUCMConfigurationComponent> components = getList();
-
+        
         try {
-            List<Activity> activities = Version.getBaselineDiff( component.getBaseline(), ( other != null ? other.getBaseline() : null ), false, new File( getView().getPath() ) );
-
-            for( Activity a : activities ) {
+            List<Activity> activities = Version.getBaselineDiff( component.getBaseline(), ( other != null ? other.getBaseline() : null ), false, new File( getView().getPath() ) );         
+            for( Activity a : activities ) {               
                 ConfigRotatorChangeLogEntry entry = new ConfigRotatorChangeLogEntry( a.getHeadline(), a.getUser(), new ArrayList<ConfigRotatorVersion>() );
                 for( Version v : a.changeset.versions ) {
                     entry.addVersion( new ConfigRotatorVersion( v.getSFile(), v.getVersion(), v.blame() ) );

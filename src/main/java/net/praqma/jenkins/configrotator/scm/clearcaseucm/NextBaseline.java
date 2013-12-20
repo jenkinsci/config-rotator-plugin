@@ -37,8 +37,7 @@ public class NextBaseline implements FilePath.FileCallable<Baseline> {
                 addFilter( new AfterBaseline( offset ) ).
                 addFilter( new NoDeliver() ).
                 addFilter( new NoLabels() ).
-                setSorting( new BaselineList.AscendingDateSort() ).
-                load().
+                setSorting( new BaselineList.AscendingDateSort() ).                
                 setLimit( 1 );
 
         try {

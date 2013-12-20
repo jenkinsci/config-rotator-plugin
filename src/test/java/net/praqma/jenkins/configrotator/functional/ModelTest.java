@@ -13,7 +13,6 @@ import net.praqma.util.test.junit.LoggingRule;
 import org.junit.ClassRule;
 import org.junit.Test;
 
-import java.io.File;
 import java.io.IOException;
 
 /**

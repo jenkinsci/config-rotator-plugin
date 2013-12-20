@@ -12,6 +12,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
@@ -20,6 +21,7 @@ import java.util.logging.Logger;
  */
 public class ConfigRotatorChangeLogParser extends ChangeLogParser {
     private static Logger logger = Logger.getLogger( ConfigRotatorChangeLogParser.class.getName() );
+    
     @Override
     public ChangeLogSet<? extends ChangeLogSet.Entry> parse( AbstractBuild build, File changelogFile ) throws IOException, SAXException {
         Digester digester = new Digester2();
@@ -37,13 +39,11 @@ public class ConfigRotatorChangeLogParser extends ChangeLogParser {
         digester.addSetNext( "*/changelog/commit/versions/version", "addVersion" );
         digester.addSetNext( "*/changelog/commit", "add" );
         try {
-            logger.fine("FILE: " + changelogFile);
             FileReader reader = new FileReader( changelogFile );
-            logger.fine("READER: " + reader);
-            logger.fine("DIGESTER: " + digester);
             digester.parse( reader );
             reader.close();
         } catch( SAXException sex ) {
+            logger.log(Level.WARNING, "SAXException caught. Trace written.", sex);
             return new ConfigRotatorChangeLogSet( build );
         }
         ConfigRotatorChangeLogSet clogSet = new ConfigRotatorChangeLogSet( build, changesetList );

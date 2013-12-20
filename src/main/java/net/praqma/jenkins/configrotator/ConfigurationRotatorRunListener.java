@@ -104,7 +104,6 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
         localListener = listener;
 
         AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
-        logger.fine("RUN: " + run);
         if( build.getProject().getScm() instanceof ConfigurationRotator ) {
 
             AbstractConfigurationRotatorSCM acscm = ((ConfigurationRotator)build.getProject().getScm()).getAcrs();
@@ -117,10 +116,8 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
 
                 try {
 
-                    for( AbstractConfigurationComponent component : components ) {
-                        logger.fine("Component: " + component);
-                        File feedFile = component.getFeedFile( acscm.getFeedPath() );
-                        logger.fine("feed file: " + feedFile);
+                    for( AbstractConfigurationComponent component : components ) {                        
+                        File feedFile = component.getFeedFile( acscm.getFeedPath() );                        
                         Date updated = new Date();
 
                         Feed feed = component.getFeed( feedFile, acscm.getFeedURL(), updated );
@@ -134,9 +131,7 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
                     }
                 } catch( Exception fe ) {
                     logger.log( Level.SEVERE, "Feed error", fe );
-                    localListener.getLogger().println( "ConfigRotator RunListener - caught FeedException, not feeding anything for build: "
-                            + build.getDisplayName() + ", #" + build.getNumber()
-                            + ". Exception was: " + fe.getMessage() );
+                    localListener.getLogger().println( "ConfigRotator RunListener caught excetption. Trace written to log.");
                 }
             }
         }
@@ -154,10 +149,8 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
      */
     private void writeFeedToFile( Feed feed, File feedFile ) throws FeedException {
         Writer writer = null;
-        try {
-            /* First check if the feed file exists */
-            if( !feedFile.exists() ) {
-                /* ... Then the folder */
+        try {            
+            if( !feedFile.exists() ) {                
                 if( !feedFile.getParentFile().exists() ) {
                     // create file including dirs
                     if( !feedFile.getParentFile().mkdirs() ) {

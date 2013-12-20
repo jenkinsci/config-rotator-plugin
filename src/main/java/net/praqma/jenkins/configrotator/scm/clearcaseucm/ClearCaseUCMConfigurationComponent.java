@@ -6,11 +6,7 @@ import net.praqma.clearcase.ucm.entities.Project;
 import net.praqma.clearcase.ucm.entities.Project.PromotionLevel;
 import net.praqma.jenkins.configrotator.*;
 
-import java.util.logging.Logger;
-
 public class ClearCaseUCMConfigurationComponent extends AbstractConfigurationComponent {
-
-    private static Logger logger = Logger.getLogger( ClearCaseUCMConfigurationComponent.class.getName() );
 
     private Baseline baseline;
     private PromotionLevel plevel;
@@ -25,13 +21,11 @@ public class ClearCaseUCMConfigurationComponent extends AbstractConfigurationCom
         super( fixed );
         this.baseline = Baseline.get( baseline ).load();
         this.plevel = Project.PromotionLevel.valueOf( plevel );
-
     }
-
+    
     @Override
     public ClearCaseUCMConfigurationComponent clone() {
         ClearCaseUCMConfigurationComponent cc = new ClearCaseUCMConfigurationComponent( this.baseline, this.plevel, this.fixed );
-
         return cc;
     }
 
