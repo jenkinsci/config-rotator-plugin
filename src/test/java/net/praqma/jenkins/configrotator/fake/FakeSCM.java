@@ -120,6 +120,9 @@ public class FakeSCM extends AbstractConfigurationRotatorSCM {
 
     @Override
     public boolean wasReconfigured( AbstractProject<?, ?> project ) {
+        if(project.getLastBuild() == null) {
+            return true;
+        }
         return project.getLastBuild().getNumber() == 1;
     }
 
