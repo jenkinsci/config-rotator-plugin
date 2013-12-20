@@ -3,12 +3,11 @@
     <var name="pvobname" value="${name}_PVOB" />
     <var name="vobname" value="${name}" />
 
-    <vob storetag="pvobname" tag="${pvobname}" linuxtag="/vobs/${pvobname}" comment="PVOB" ucmproject="true" stgloc="-auto" mounted="true"/>
-    <vob storetag="vobname" tag="${vobname}" linuxtag="/vobs/${vobname}" stgloc="-auto" mounted="true"/>
+    <vob storetag="pvobname" tag="\${pvobname}" linuxtag="/vobs/${pvobname}" comment="PVOB" ucmproject="true" stgloc="-auto" mounted="true"/>
+    <vob storetag="vobname" tag="\${vobname}" linuxtag="/vobs/${vobname}" stgloc="-auto" mounted="true"/>
 	
-  <!-- <hlink name="AdminVOB" from="vob:cc1" to="vob:${pvobname}" /> -->
   <view tag="${name}_setupview" stgloc="-auto"/>
-  <context mvfs="m:\" view="${vobname}_setupview" vob="${vobname}"/>
+  <context mvfs="m:\" linux="/view" view="${name}_setupview" vob="${vobname}"/>
   
   <component root="" comment="" name="_System" pvob="${pvobname}" />
   <component root="" comment="" name="_Server" pvob="${pvobname}" />

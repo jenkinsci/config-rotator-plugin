@@ -33,6 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.logging.Logger;
+import org.apache.commons.lang.SystemUtils;
 
 /**
  * @author cwolfgang
@@ -40,7 +41,9 @@ import java.util.logging.Logger;
 public class FB8790 {
 
     private static Logger logger = Logger.getLogger( FB8790.class.getName() );
+    private static String vobprefix = SystemUtils.IS_OS_UNIX ? "vobs/" : "";;
 
+    
     public static ClearCaseRule ccenv = new ClearCaseRule( "FB8790" );
 
     public static LoggingRule lrule = new LoggingRule( "net.praqma" ).setFormat( PraqmaticLogFormatter.TINY_FORMAT );
@@ -53,14 +56,15 @@ public class FB8790 {
 
     @Test
     public void removeTarget() throws IOException, ExecutionException, InterruptedException {
+        String uniqueName = ccenv.getUniqueName();
         ProjectBuilder builder = new ProjectBuilder( new ClearCaseUCM( ccenv.getPVob() ) ).setName( "remove-target" );
         ConfigRotatorProject project = builder.getProject();
         project.addTarget( new ClearCaseUCMTarget( "model-1@" + ccenv.getPVob() + ", INITIAL, false" ) ).
                 addTarget( new ClearCaseUCMTarget( "client-1@" + ccenv.getPVob() + ", INITIAL, false" ) );
 
         AbstractBuild<?, ?> build = crrule.buildProject( project.getJenkinsProject(), false, null );
-
-        FilePath path = new FilePath( project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor( (FreeStyleProject)project.getJenkinsProject() ), "view/" + ccenv.getUniqueName() );
+        
+        FilePath path = new FilePath( project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor( (FreeStyleProject)project.getJenkinsProject() ), "view/" + vobprefix + uniqueName );
         listPath( path );
 
         SystemValidator<ClearCaseUCMTarget> val = new SystemValidator<ClearCaseUCMTarget>( build );
@@ -93,8 +97,10 @@ public class FB8790 {
 
     @Test
     public void wipedWorkspace() throws IOException, ExecutionException, InterruptedException, ServletException {
+        String uniqueName = ccenv.getUniqueName();
         ProjectBuilder builder = new ProjectBuilder( new ClearCaseUCM( ccenv.getPVob() ) ).setName( "wiped-workspace" );
         ConfigRotatorProject project = builder.getProject();
+        
         project.addTarget( new ClearCaseUCMTarget( "model-1@" + ccenv.getPVob() + ", INITIAL, false" ) ).
                 addTarget( new ClearCaseUCMTarget( "client-1@" + ccenv.getPVob() + ", INITIAL, false" ) );
 
@@ -105,7 +111,7 @@ public class FB8790 {
         /* Do the second build */
         AbstractBuild<?, ?> build2 = crrule.buildProject( project.getJenkinsProject(), false, null );
 
-        FilePath path = new FilePath( project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor( (FreeStyleProject)project.getJenkinsProject() ), "view/" + ccenv.getUniqueName() );
+        FilePath path = new FilePath( project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor( (FreeStyleProject)project.getJenkinsProject() ), "view/" + vobprefix + ccenv.getUniqueName() );
 
         /* Verify second build */
         SystemValidator<ClearCaseUCMTarget> val2 = new SystemValidator<ClearCaseUCMTarget>( build2 );
@@ -120,7 +126,8 @@ public class FB8790 {
     @Test
     public void testView() throws IOException, ClearCaseException, InterruptedException {
         File path = createTempPath();
-        String viewTag = ccenv.getUniqueName() + "_TAG";
+        String uniqueName = ccenv.getUniqueName();        
+        String viewTag = uniqueName + "_TAG";
 
         Stream oneInt = ccenv.context.streams.get( "one_int" );
         Baseline model1 = ccenv.context.baselines.get( "model-1" );
@@ -139,9 +146,17 @@ public class FB8790 {
 
         /* Verify first */
         FilePath viewroot = new FilePath( view.getViewRoot() );
-        FilePath filepath = new FilePath( viewroot, ccenv.getUniqueName() );
+        logger.info("View root is: "+view.getViewRoot());
+        logger.info("Unique name is: "+uniqueName);
+        
+        //Modified by mads
+        FilePath filepath = new FilePath( viewroot, (SystemUtils.IS_OS_UNIX ? "vobs/" : "") + uniqueName );
         listPath( filepath );
 
+        /**
+         * In Linux this fails becasue the system validator tried to validate a folder called Model in /tmp/tmpdirname/<uniquename>
+         * on linux the vobtag gets prefixed with /vobs so you end up with a folder in /tmp/tmpdirname/vobs/<uniquename>
+         */
         new SystemValidator().addElementToPathCheck( filepath, new SystemValidator.Element( "Model", true ) ).
                 addElementToPathCheck( filepath, new SystemValidator.Element( "Clientapp", true ) ).
                 validatePath();
@@ -158,7 +173,7 @@ public class FB8790 {
     }
 
     public File createTempPath() throws IOException {
-        File path = path = File.createTempFile( "snapshot", "view" );
+        File path = File.createTempFile( "snapshot", "view" );
 
         if( !path.delete() ) {
             throw new IOException( "Unable to delete dir " + path );
@@ -173,9 +188,13 @@ public class FB8790 {
     }
 
     protected void listPath( FilePath path ) throws IOException, InterruptedException {
-        logger.info( "Listing " + path + "(" + path.exists() + ")" );
-        for( FilePath f : path.list() ) {
-            logger.info( " * " + f );
+        if(path != null) {
+            logger.info( "Listing " + path + "(" + path.exists() + ")" );
+            if(path.exists()) {
+                for( FilePath f : path.list() ) {
+                    logger.info( " * " + f );
+                }
+            }
         }
     }
 }
