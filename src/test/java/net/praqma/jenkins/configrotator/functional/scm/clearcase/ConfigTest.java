@@ -16,7 +16,6 @@ import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMConfigurati
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMTarget;
 import org.junit.ClassRule;
 import org.junit.Rule;
-import org.junit.Test;
 
 import net.praqma.jenkins.configrotator.ConfigRotatorRule;
 import net.praqma.jenkins.configrotator.ConfigurationRotator;
@@ -1188,9 +1187,6 @@ public class ConfigTest {
         System.out.println(debugLine + "getShortname(): " + configuration.getList().get(1).getBaseline().getShortname());
         assertEquals("model-2", configuration.getList().get(0).getBaseline().getShortname());
         assertEquals("client-1", configuration.getList().get(1).getBaseline().getShortname());
-
-
-
 
         /*
          * ******************************************************

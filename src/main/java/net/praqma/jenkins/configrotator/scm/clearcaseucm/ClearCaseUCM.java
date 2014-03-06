@@ -8,15 +8,23 @@ import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.TaskListener;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
-
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import net.praqma.clearcase.PVob;
+import net.praqma.clearcase.Rebase;
+import net.praqma.clearcase.exceptions.CleartoolException;
+import net.praqma.clearcase.exceptions.UCMEntityNotInitializedException;
+import net.praqma.clearcase.exceptions.UnableToInitializeEntityException;
 import net.praqma.clearcase.ucm.entities.Baseline;
+import net.praqma.clearcase.ucm.entities.Component;
 import net.praqma.clearcase.ucm.entities.Project;
+import net.praqma.clearcase.ucm.entities.Stream;
 import net.praqma.clearcase.ucm.view.SnapshotView;
 import net.praqma.jenkins.configrotator.*;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
@@ -25,15 +33,6 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
 import org.kohsuke.stapler.StaplerRequest;
-
-import java.util.HashSet;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import java.util.regex.Pattern;
-import net.praqma.clearcase.exceptions.UCMEntityNotInitializedException;
-
-import net.praqma.clearcase.ucm.entities.Component;
 
 public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Serializable {
 
@@ -147,10 +146,10 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
                 out.println( ConfigurationRotator.LOGGERNAME + "Creating view" );
                 logger.fine( "Creating view" );
                 SnapshotView view = createView( listener, build, configuration, workspace, pvob );
+                logger.fine( String.format("Created view %s", view) );
                 configuration.setView( view );
             } catch( Exception e ) {
-                out.println( ConfigurationRotator.LOGGERNAME + "Unable to create view" );
-                
+                out.println( ConfigurationRotator.LOGGERNAME + "Unable to create view" );                
                 ConfigurationRotatorException ex = new ConfigurationRotatorException( "Unable to create view", e ); 
                 logger.log(Level.SEVERE, "Unable to create view in createWorkspace()", ex);
                 throw ex;
@@ -228,7 +227,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
                 // check 1) is a component more than once in the configuration?
                 // as baselines are part of component, this also ensure no two baseline
                 // for the same component are used.
-                Component currentClearCaseComponent = c.getBaseline().getComponent();
+                Component currentClearCaseComponent = c.getBaseline().getComponent();                
                 if( !ccucmcfgset.contains( currentClearCaseComponent ) ) {
                     ccucmcfgset.add( currentClearCaseComponent );
                 } else {
@@ -265,6 +264,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
                 try {
                     //current = workspace.act( new GetBaselines( listener, config.getBaseline().getComponent(), config.getBaseline().getStream(), config.getPlevel(), 1, config.getBaseline() ) ).get( 0 ); //.get(0) newest baseline, they are sorted!
                     current = workspace.act( new NextBaseline( config.getBaseline().getStream(), config.getBaseline().getComponent(), config.getPlevel(), config.getBaseline() ) );
+
                     current = (Baseline) RemoteUtil.loadEntity( workspace, current, true );
                     if( oldest == null || current.getDate().before( oldest.getDate() ) ) {
                         oldest = current;
@@ -275,9 +275,8 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
 
                 } catch( Exception e ) {
                     /* No baselines found .get(0) above throws exception if no new baselines*/
-                    logger.fine( ConfigurationRotator.LOGGERNAME + "No baselines found: " + e.getMessage() );
+                    logger.log(Level.FINE, ConfigurationRotator.LOGGERNAME + "No baselines found. Exception message follows", e );
                 }
-
             }
         }
 
@@ -303,7 +302,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         List<Baseline> selectedBaselines = new ArrayList<Baseline>();
         logger.fine( "Selected baselines:" );
         for( ClearCaseUCMConfigurationComponent config : configuration.getList() ) {
-            logger.fine( "Component: " + config );            
+            logger.fine( String.format( "Component: %s", config ) );            
             selectedBaselines.add( config.getBaseline() );
         }
 

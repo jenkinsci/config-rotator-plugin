@@ -5,10 +5,8 @@ import hudson.model.Hudson;
 import hudson.model.Project;
 import hudson.model.TopLevelItem;
 import hudson.scm.SCM;
-
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 /**
