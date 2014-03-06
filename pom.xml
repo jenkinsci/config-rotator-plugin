@@ -3,12 +3,12 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.509</version>
+        <version>1.509.4</version>
     </parent>
 
     <groupId>net.praqma</groupId>
     <artifactId>config-rotator</artifactId>
-    <version>1.1.3-SNAPSHOT</version>
+    <version>1.1.4-SNAPSHOT</version>
     <name>Config Rotator Plugin</name>
     <description>Automatic rotations of possible configurations. Monitors the SCM for newer versions of components and tests if compliant. Available for ClearCaseUCM and Git.
     </description>
@@ -207,6 +207,7 @@
                         <configuration>
                             <includes>
                                 <include>net/praqma/jenkins/configrotator/unit/**/*.java</include>
+                                <include>net/praqma/jenkins/configrotator/*.java</include>
                             </includes>
                         </configuration>
                     </plugin>
@@ -229,6 +230,8 @@
                                 <include>net/praqma/jenkins/configrotator/functional/scm/clearcase/*.java</include>
                                 <include>net/praqma/jenkins/configrotator/functional/ModelTest.java</include>
                                 <include>net/praqma/jenkins/configrotator/functional/scm/git/*.java</include>
+                                <include>net/praqma/jenkins/configrotator/unit/**/*.java</include>
+                                <include>net/praqma/jenkins/configrotator/*.java</include>
                             </includes>
                         </configuration>
                     </plugin>

@@ -18,16 +18,16 @@
 	<f:entry title="${%UCM configuration}">
 		<f:repeatable var="targets" varStatus="instStatus" items="${descriptor.getTargets(instance)}">
 			
-            <table width="40%">
+            <table width="50%">
                 <col width="100%"/>
 
                 <tbody>
 			 		<tr>
-                        <td align="left">
+                        <td align="left" style="min-width:200px">
                             ${%Baseline}
                         	<f:textbox name="cc.target.baselineName" value="${targets.baselineName}"/>                            
                         </td>
-                        <td align="left">
+                        <td align="left" style="min-width:100px">
                             ${%Promotion level}
                             <select name="cc.target.level">
                                 <j:forEach var="availableLevel" items="${descriptor.getPromotionLevels()}">
@@ -35,11 +35,11 @@
                                 </j:forEach>
                             </select>
                         </td>
-                        <td align="left">
+                        <td align="center">
                             ${%Fixed}
                             <f:checkbox name="cc.target.fixed" checked="${targets.fixed}"/>                    
                         </td>
-                        <td>
+                        <td style="vertical-align:middle">
                             <f:repeatableDeleteButton/>
                         </td>
 					</tr>

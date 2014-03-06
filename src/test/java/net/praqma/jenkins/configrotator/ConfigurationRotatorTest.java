@@ -70,18 +70,14 @@ public class ConfigurationRotatorTest {
     @Test
     public void checkoutTestInitial() throws IOException, InterruptedException {
         scm.setLastActionAsValid( false );
-
         boolean result = spy.checkout( build, launcher, workspace, buildlistener, null );
-
         assertThat( result, is( true ) );
     }
 
     @Test( expected = AbortException.class )
     public void checkoutTestInitialNull() throws IOException, InterruptedException {
         scm.setInitialConfigurationAsValid( false ).setLastActionAsValid( false );
-
         boolean result = spy.checkout( build, launcher, workspace, buildlistener, null );
-
         assertThat( result, is( false ) );
     }
 

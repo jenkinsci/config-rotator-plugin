@@ -2,7 +2,6 @@ package net.praqma.jenkins.configrotator.functional.scm.clearcase;
 
 import hudson.model.AbstractBuild;
 import hudson.model.Result;
-import net.praqma.clearcase.test.annotations.ClearCaseUniqueVobName;
 import net.praqma.clearcase.test.junit.ClearCaseRule;
 import net.praqma.jenkins.configrotator.*;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCM;
@@ -22,7 +21,7 @@ import static org.junit.Assert.assertNotNull;
 
 public class NewModel {
 
-    private static Logger logger = Logger.getLogger( NewModel.class.getName() );
+    private static final Logger logger = Logger.getLogger( NewModel.class.getName() );
 
     public static ClearCaseRule ccenv = new ClearCaseRule( "cr1" );
 
