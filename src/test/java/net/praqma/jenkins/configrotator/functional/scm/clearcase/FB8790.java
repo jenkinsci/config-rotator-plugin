@@ -40,7 +40,7 @@ import org.apache.commons.lang.SystemUtils;
  */
 public class FB8790 {
 
-    private static Logger logger = Logger.getLogger( FB8790.class.getName() );
+    private static final Logger logger = Logger.getLogger( FB8790.class.getName() );
     private static String vobprefix = SystemUtils.IS_OS_UNIX ? "vobs/" : "";;
 
     

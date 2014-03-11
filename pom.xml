@@ -18,6 +18,8 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <powermock.version>1.4.12</powermock.version>
+        <cool.version>0.6.29</cool.version>
+        <praqmajutils.version>0.1.33</praqmajutils.version>
     </properties>
 
     <build>
@@ -395,13 +397,13 @@
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>praqmajutils</artifactId>
-            <version>0.1.33</version>
+            <version>${praqmajutils.version}</version>
         </dependency>
 
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>praqmajutils</artifactId>
-            <version>0.1.33</version>
+            <version>${praqmajutils.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
@@ -409,13 +411,13 @@
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>cool</artifactId>
-            <version>0.6.27</version>
+            <version>${cool.version}</version>
         </dependency>
 
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>cool</artifactId>
-            <version>0.6.27</version>
+            <version>${cool.version}</version>
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>

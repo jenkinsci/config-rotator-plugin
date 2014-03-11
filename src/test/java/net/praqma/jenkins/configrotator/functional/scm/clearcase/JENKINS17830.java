@@ -4,6 +4,8 @@ import hudson.FilePath;
 import hudson.model.AbstractBuild;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import java.io.IOException;
+import java.util.logging.Logger;
 import net.praqma.clearcase.test.junit.ClearCaseRule;
 import net.praqma.jenkins.configrotator.ConfigRotatorProject;
 import net.praqma.jenkins.configrotator.ConfigRotatorRule2;
@@ -13,14 +15,11 @@ import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCM;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMTarget;
 import net.praqma.logging.PraqmaticLogFormatter;
 import net.praqma.util.test.junit.LoggingRule;
+import org.apache.commons.lang.SystemUtils;
 import org.junit.ClassRule;
 import org.junit.Test;
 import org.junit.rules.RuleChain;
 import org.junit.rules.TestRule;
-
-import java.io.IOException;
-import java.util.logging.Logger;
-import org.apache.commons.lang.SystemUtils;
 
 /**
  * @author cwolfgang
@@ -31,7 +30,7 @@ public class JENKINS17830 {
 
     public static ClearCaseRule ccenv = new ClearCaseRule( "JENKINS17830", "setup-rootless.xml" );
 
-    public static LoggingRule lrule = new LoggingRule( "net.praqma" ).setFormat( PraqmaticLogFormatter.TINY_FORMAT );
+    public static final LoggingRule lrule = new LoggingRule( "net.praqma" ).setFormat( PraqmaticLogFormatter.TINY_FORMAT );
 
     @ClassRule
     public static TestRule chain = RuleChain.outerRule( lrule ).around( ccenv );

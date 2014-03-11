@@ -30,8 +30,6 @@ public class ClearCaseBaseLineCompareTest extends TestCase {
         channel = PowerMockito.mock(VirtualChannel.class);
         confone = PowerMockito.mock(ClearCaseUCMConfiguration.class);
         buildlistener = PowerMockito.mock(BuildListener.class);
-        //compare = new ClearCaseGetBaseLineCompare(buildlistener, confone, conftwo);
-        //PowerMockito.when(confone.difference(Mockito.any(ClearCaseUCMConfiguration.class))).thenReturn(new ArrayList<ClearCaseActivity>());
     }
     
     

@@ -1,17 +1,15 @@
 package net.praqma.jenkins.configrotator;
 
-import java.io.*;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.concurrent.ExecutionException;
-
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.BuildListener;
 import hudson.model.FreeStyleBuild;
 import hudson.model.FreeStyleProject;
-
 import hudson.tasks.Builder;
+import java.io.*;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.concurrent.ExecutionException;
 import net.praqma.clearcase.PVob;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCM;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMTarget;

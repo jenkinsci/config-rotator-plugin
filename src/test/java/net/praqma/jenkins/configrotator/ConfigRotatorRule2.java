@@ -2,27 +2,23 @@ package net.praqma.jenkins.configrotator;
 
 import hudson.Launcher;
 import hudson.model.*;
-import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.TestBuilder;
-
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Logger;
+import org.jvnet.hudson.test.JenkinsRule;
+import org.jvnet.hudson.test.TestBuilder;
 
 /**
  * @author cwolfgang
  */
 public class ConfigRotatorRule2 extends JenkinsRule {
 
-    private static Logger logger = Logger.getLogger( ConfigRotatorRule2.class.getName() );
+    private static final Logger logger = Logger.getLogger( ConfigRotatorRule2.class.getName() );
 
     private File outputDir;
 
     public ConfigRotatorRule2( Class<?> clazz ) {
-
-        //System.out.println( "ENVS: " +  System.getenv() );
 
         if( System.getenv().containsKey( "BUILD_NUMBER" ) ) {
             String bname = System.getenv( "JOB_NAME" );
@@ -39,12 +35,12 @@ public class ConfigRotatorRule2 extends JenkinsRule {
     public AbstractBuild<?, ?> buildProject( Project<?, ?> project, boolean fail, Slave slave ) throws IOException {
 
         if( slave != null ) {
-            logger.fine( "Running on " + slave );
-            project.setAssignedNode( slave );
+            logger.fine( String.format( "Running on %s", slave.getSelfLabel().getName() ) );
+            project.setAssignedLabel(slave.getSelfLabel());
         }
 
         if( fail ) {
-            logger.info( "Failing " + project );
+            logger.info( String.format( "Failing %s", project ) );
             project.getBuildersList().add( new Failer() );
         } else {
             /* Should remove fail task */
