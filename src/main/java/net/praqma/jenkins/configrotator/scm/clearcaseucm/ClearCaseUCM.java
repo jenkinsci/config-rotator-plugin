@@ -63,33 +63,40 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
     public ConfigRotatorChangeLogParser createChangeLogParser() {
         return new ConfigRotatorChangeLogParser();
     }
+    
+    public List<ClearCaseUCMTarget> getCompareTargets( AbstractProject<?,?> project ) {
+        ConfigurationRotatorBuildAction action = getLastResult( project, ClearCaseUCM.class );
+        DiedBecauseAction diedAction = getLastDieAction(project);
+        if(action != null && action.getConfiguration() == null) {
+            throw new AssertionError("The configuration is NOT allowed to be null at this point.");
+        }
+        
+        List<ClearCaseUCMTarget> list = (action != null) ? getConfigurationAsTargets( (ClearCaseUCMConfiguration)action.getConfiguration() ) : (List<ClearCaseUCMTarget>)diedAction.getTargets();        
+        return list;
+    }
 
     @Override
     public boolean wasReconfigured( AbstractProject<?, ?> project ) {
         logger.finest( "Checking reconfiguration" );
 
         ConfigurationRotatorBuildAction action = getLastResult( project, ClearCaseUCM.class );
+        DiedBecauseAction diedAction = getLastDieAction(project);
 
-        if( action == null ) {
+        //If there was NO previous error and action is null that means a new build
+        if(diedAction == null && action == null ) {
             return true;
         }
-
-        ClearCaseUCMConfiguration configuration = action.getConfiguration();
-
-        /* Check if the project configuration is even set */
-        if( configuration == null ) {
-            logger.fine( "Configuration was null" );
-            return true;
-        }
-
+        
+        List<ClearCaseUCMTarget> list = getCompareTargets(project);
+        
         /* Check if the sizes are equal */
-        if( targets.size() != configuration.getList().size() ) {
+        if( targets.size() != list.size() ) {
             logger.fine( "Size was not equal" );
             return true;
         }
-
-        /**/
-        List<ClearCaseUCMTarget> list = getConfigurationAsTargets( configuration );
+        
+        
+        
         for( int i = 0; i < targets.size(); ++i ) {
             if( !targets.get( i ).equals( list.get( i ) ) ) {
                 return true;

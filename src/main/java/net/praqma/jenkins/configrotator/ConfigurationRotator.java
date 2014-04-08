@@ -155,17 +155,17 @@ public class ConfigurationRotator extends SCM {
             }
         } catch( Exception e ) {
             logger.log( Level.SEVERE, "Unable to create configuration", e );            
-            DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die );
+            DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die, acrs.getTargets() );
             build.addAction( da );
             throw new AbortException( e.getMessage() );
-        }
+        } 
 
         if( !performResult ) {
             // ConfigurationRotator.perform will return false only if no new baselines found
             // We fail build if there is now new baseline.
             // An alternative would be to do like the CCUCM plugin and make the
             // build result "grey" with an comment "nothing to do".
-            DiedBecauseAction da = new DiedBecauseAction( "Nothing to rotate", DiedBecauseAction.Die.survive );
+            DiedBecauseAction da = new DiedBecauseAction( "Nothing to rotate", DiedBecauseAction.Die.survive, acrs.getTargets() );
             build.addAction( da );
             throw new AbortException( "Nothing new to rotate" );
         } else {
@@ -244,12 +244,23 @@ public class ConfigurationRotator extends SCM {
         AbstractConfigurationRotatorSCM.Poller poller = acrs.getPoller(project, launcher, workspace, listener );
 
         ConfigurationRotatorBuildAction lastAction = acrs.getLastResult( project, null );
+        DiedBecauseAction dieaction = acrs.getLastDieAction(project);
 
         try {
-            if( reconfigure || lastAction == null ) {
+            if( reconfigure ) {
                 logger.fine( "Reconfigured, build now!" );
                 out.println( LOGGERNAME + "Configuration from scratch, build now!" );
                 return PollingResult.BUILD_NOW;
+            } else if( lastAction == null)  {
+                if(dieaction != null && dieaction.died()) {
+                    logger.fine( "Do actual polling" );
+                    out.println( LOGGERNAME + "Error in configuration...do not start build" );
+                    return PollingResult.NO_CHANGES;
+                } else {
+                    logger.fine( "Do actual polling" );
+                    out.println( LOGGERNAME + "Getting next configuration" );
+                    return poller.poll( lastAction );
+                }
             } else {
                 logger.fine( "Do actual polling" );
                 out.println( LOGGERNAME + "Getting next configuration" );

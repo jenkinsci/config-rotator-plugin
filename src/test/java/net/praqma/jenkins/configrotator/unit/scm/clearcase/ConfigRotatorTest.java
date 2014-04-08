@@ -78,8 +78,13 @@ public class ConfigRotatorTest extends TestCase {
 
 
 
-	
-	@Test
+	/**
+         * We have here a test wherein an action has a null configuration. This should never happen, we should throw an assertionError
+         * @throws IOException
+         * @throws InterruptedException
+         * @throws ConfigurationRotatorException 
+         */
+	@Test(expected = AssertionError.class)
 	public void testWasReconfigured() throws IOException, InterruptedException, ConfigurationRotatorException {
 		ClearCaseUCM ccucm = new ClearCaseUCM( "" );
 		ClearCaseUCM spy = Mockito.spy( ccucm );
@@ -91,8 +96,6 @@ public class ConfigRotatorTest extends TestCase {
 		Mockito.doReturn( action ).when( spy ).getLastResult( project, ClearCaseUCM.class );
 		
 		boolean b = spy.wasReconfigured( project );
-		
-		assertEquals( true, b );
 	}
 	
 	@Test
@@ -109,7 +112,8 @@ public class ConfigRotatorTest extends TestCase {
 		
 		/* Behaviour */
 		Mockito.doReturn( action ).when( spy ).getLastResult( project, ClearCaseUCM.class );
-		Mockito.doReturn( new ArrayList<ClearCaseUCMConfigurationComponent>() ).when( ccc ).getList();
+                Mockito.doReturn( new ArrayList<ClearCaseUCMTarget>() ).when( spy ).getCompareTargets(project);
+		//Mockito.doReturn( new ArrayList<ClearCaseUCMConfigurationComponent>() ).when( ccc ).getList();
 		
 		boolean b = spy.wasReconfigured( project );
 		

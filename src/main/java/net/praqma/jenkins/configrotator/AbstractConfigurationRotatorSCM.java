@@ -203,9 +203,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
      * @param changeLogFile
      * @param listener
      * @param build
-     * @throws IOException
-     * @throws ConfigurationRotatorException
-     * @throws InterruptedException
+     * @return Change log writer
      */    
     public abstract AbstractConfigurationRotatorSCM.ChangeLogWriter getChangeLogWriter(File changeLogFile, BuildListener listener, AbstractBuild<?, ?> build);
 
@@ -308,6 +306,10 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
         }
 
         return null;
+    }
+    
+    public DiedBecauseAction getLastDieAction(AbstractProject<?, ?> project) {
+        return project.getLastBuild() != null ? project.getLastBuild().getAction(DiedBecauseAction.class) : null;
     }
 
     public ConfigurationRotatorBuildAction getPreviousResult(AbstractBuild<?, ?> build, Class<? extends AbstractConfigurationRotatorSCM> clazz) {
