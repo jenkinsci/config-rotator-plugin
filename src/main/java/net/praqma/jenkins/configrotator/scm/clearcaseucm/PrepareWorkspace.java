@@ -6,8 +6,8 @@ import hudson.remoting.VirtualChannel;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import net.praqma.clearcase.ConfigSpec;
 import net.praqma.clearcase.Rebase;
@@ -24,11 +24,11 @@ import net.praqma.jenkins.configrotator.ConfigurationRotator;
 
 public class PrepareWorkspace implements FileCallable<SnapshotView> {
 
-    private Project project;
+    private final Project project;
     private static final Logger log = Logger.getLogger(PrepareWorkspace.class.getName());
-    private TaskListener listener;
-    private String jenkinsProjectName;
-    private List<Baseline> baselines;
+    private final TaskListener listener;
+    private final String jenkinsProjectName;
+    private final List<Baseline> baselines;
 
     public PrepareWorkspace(Project project, List<Baseline> baselines, String jenkinsProjectName, TaskListener listener) {
         this.project = project;
@@ -63,12 +63,15 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
             out.println(ConfigurationRotator.LOGGERNAME + "Stream exists");
 
             try {
-                view = new GetView(viewroot, viewtag).get();
+                /**
+                 * FogBugz 11220, when we get the view, we must make sure that the view is present. 
+                 */
+                view = new GetView(viewroot, viewtag).createIfAbsent().setStream(devStream).get();                
             } catch (ClearCaseException e) {
                 throw new IOException("Could not get view", e);
             }
             try {
-                Rebase rb = new Rebase(devStream);
+                Rebase rb = new Rebase(devStream);                
                 out.println(ConfigurationRotator.LOGGERNAME + "Rebasing stream to " + devStream.getNormalizedName());
                 rb.setViewTag(viewtag).addBaselines(baselines).dropFromStream().rebase(true, true);                
             } catch (RebaseException e) {                
@@ -99,6 +102,7 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
                 view = new GetView(viewroot, viewtag).setStream(devStream).createIfAbsent().get();
                 new UpdateView(view).setLoadRules(new SnapshotView.LoadRules(view, SnapshotView.Components.ALL)).generate().update();
             } catch (ClearCaseException e) {
+                log.log(Level.WARNING, "Failed to update view, exception to follow", e);
                 throw new IOException("Unable to create view", e);
             }
         }

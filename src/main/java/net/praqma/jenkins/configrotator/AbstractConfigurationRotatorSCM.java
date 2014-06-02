@@ -24,7 +24,7 @@ import net.praqma.jenkins.configrotator.scm.ConfigRotatorVersion;
 
 public abstract class AbstractConfigurationRotatorSCM implements Describable<AbstractConfigurationRotatorSCM>, ExtensionPoint {
 
-    private static Logger logger = Logger.getLogger(AbstractConfigurationRotatorSCM.class.getName());
+    private static final Logger logger = Logger.getLogger(AbstractConfigurationRotatorSCM.class.getName());
     protected AbstractConfiguration projectConfiguration;
 
     /**
@@ -87,7 +87,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
                 return PollingResult.NO_CHANGES;
             }
 
-            C configuration = action.getConfiguration();
+            AbstractConfiguration configuration = action.getConfiguration();
 
             if (configuration != null) {
                 logger.fine("Resolving next configuration based on " + configuration);
