@@ -141,7 +141,7 @@ public class FB8790 {
         GetView gv = new GetView( path, viewTag ).createIfAbsent().setStream( container );
         SnapshotView view = gv.get();
 
-        SnapshotView.LoadRules lr = new SnapshotView.LoadRules( view, SnapshotView.Components.ALL );
+        SnapshotView.LoadRules2 lr = new SnapshotView.LoadRules2( view, SnapshotView.Components.ALL );
         new UpdateView( view ).setLoadRules( lr ).update();
 
         /* Verify first */

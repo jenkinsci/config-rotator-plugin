@@ -100,7 +100,7 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
             }
             try {
                 view = new GetView(viewroot, viewtag).setStream(devStream).createIfAbsent().get();
-                new UpdateView(view).setLoadRules(new SnapshotView.LoadRules(view, SnapshotView.Components.ALL)).generate().update();
+                new UpdateView(view).setLoadRules(new SnapshotView.LoadRules2(view, SnapshotView.Components.ALL)).generate().update();
             } catch (ClearCaseException e) {
                 log.log(Level.WARNING, "Failed to update view, exception to follow", e);
                 throw new IOException("Unable to create view", e);
