@@ -5,7 +5,12 @@
         <artifactId>plugin</artifactId>
         <version>1.509.4</version>
     </parent>
-
+    <developers>
+        <developer>
+            <id>praqma_josra</id>
+            <name>Praqma Josra</name>
+        </developer>
+    </developers>
     <groupId>net.praqma</groupId>
     <artifactId>config-rotator</artifactId>
     <version>1.1.7-SNAPSHOT</version>
@@ -346,39 +351,6 @@
         </profile>
 
     </profiles>
-
-    <developers>
-        <developer>
-            <id>wolfgarnet</id>
-            <name>Christian Wolfgang</name>
-            <email>support@praqma.net</email>
-            <organization>Praqma A/S</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>buep</id>
-            <name>Bue Petersen</name>
-            <email>support@praqma.net</email>
-            <organization>Praqma A/S</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-        <developer>
-            <id>MadsNielsen</id>
-            <name>Mads Nielsen</name>
-            <email>support@praqma.net</email>
-            <organization>Praqma A/S</organization>
-            <roles>
-                <role>developer</role>
-            </roles>
-            <timezone>+1</timezone>
-        </developer>
-    </developers>
 
     <scm>
         <connection>scm:git:http://github.com/Praqma/config-rotator-plugin</connection>
