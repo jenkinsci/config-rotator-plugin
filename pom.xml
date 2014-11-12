@@ -371,7 +371,7 @@
             <artifactId>praqmajutils</artifactId>
             <version>${praqmajutils.version}</version>
         </dependency>
-
+        
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>praqmajutils</artifactId>

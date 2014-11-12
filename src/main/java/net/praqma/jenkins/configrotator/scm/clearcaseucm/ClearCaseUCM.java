@@ -84,17 +84,17 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         }
         
         List<ClearCaseUCMTarget> list = getCompareTargets(project);
+        List<ClearCaseUCMTarget> configTargets = getTargets();
         
         /* Check if the sizes are equal */
-        if( targets.size() != list.size() ) {
+        if( configTargets.size() != list.size() ) {
             logger.fine( "Size was not equal" );
             return true;
         }
-        
-        
-        
-        for( int i = 0; i < targets.size(); ++i ) {
-            if( !targets.get( i ).equals( list.get( i ) ) ) {
+
+        for( int i = 0; i < configTargets.size(); ++i ) {
+            logger.fine(String.format( "Comparing (SCM Configuration Target) %s to (Previously Completed Build Target) %s", configTargets.get(i), list.get(i)) );
+            if( !configTargets.get( i ).equals( list.get( i ) ) ) {
                 return true;
             }
         }
@@ -324,7 +324,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
      * @return A list of targets
      */
     @Override
-    public List<ClearCaseUCMTarget> getTargets() {
+    public final List<ClearCaseUCMTarget> getTargets() {
         if( projectConfiguration != null ) {
             return getConfigurationAsTargets( (ClearCaseUCMConfiguration) projectConfiguration );
         } else {
@@ -414,7 +414,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
                 }
             }
             instance.targets = targets;
-
             save();
             return instance;
         }

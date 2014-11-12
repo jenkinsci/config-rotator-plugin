@@ -37,7 +37,7 @@ public class ConfigurationRotator extends SCM {
      */
     private boolean printDebug = false;
 
-    private static Logger logger = Logger.getLogger( ConfigurationRotator.class.getName() );
+    private static final Logger logger = Logger.getLogger( ConfigurationRotator.class.getName() );
 
     public enum ResultType {
         COMPATIBLE,
@@ -296,7 +296,7 @@ public class ConfigurationRotator extends SCM {
 
         @Override
         public SCM newInstance( StaplerRequest req, JSONObject formData ) throws FormException {
-            ConfigurationRotator r = (ConfigurationRotator) super.newInstance( req, formData );
+            ConfigurationRotator r = (ConfigurationRotator) super.newInstance( req, formData );            
             ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM> d = (ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>) r.getAcrs().getDescriptor();
             r.acrs = d.newInstance( req, formData, r.acrs );
             save();
