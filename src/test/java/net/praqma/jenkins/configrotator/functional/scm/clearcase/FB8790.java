@@ -141,7 +141,7 @@ public class FB8790 {
         GetView gv = new GetView( path, viewTag ).createIfAbsent().setStream( container );
         SnapshotView view = gv.get();
 
-        SnapshotView.LoadRules2 lr = new SnapshotView.LoadRules2( view, SnapshotView.Components.ALL );
+        SnapshotView.LoadRules2 lr = new SnapshotView.LoadRules2( SnapshotView.Components.ALL );
         new UpdateView( view ).setLoadRules( lr ).update();
 
         /* Verify first */
@@ -165,7 +165,7 @@ public class FB8790 {
         new Rebase( container ).addBaseline( model1 ).dropFromStream().rebase( true );
         new ConfigSpec( view.getViewRoot() ).addLoadRule( model1 ).generate().appy();
 
-        new UpdateView( view ).swipe().overwrite().update();
+        new UpdateView( view ).setLoadRules(lr).swipe().overwrite().update();
 
         new SystemValidator().addElementToPathCheck( filepath, new SystemValidator.Element( "Model", true ) ).
                 addElementToPathCheck( filepath, new SystemValidator.Element( "Clientapp", false ) ).

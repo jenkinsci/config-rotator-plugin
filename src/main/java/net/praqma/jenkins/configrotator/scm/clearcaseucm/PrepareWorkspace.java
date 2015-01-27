@@ -85,7 +85,7 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
                 out.println(ConfigurationRotator.LOGGERNAME + "View root: " + new File(workspace, "view"));
                 out.println(ConfigurationRotator.LOGGERNAME + "View tag : " + viewtag);
                 new ConfigSpec(viewroot).addLoadRule(baselines).generate().appy();
-                new UpdateView(view).swipe().overwrite().update();
+                new UpdateView(view).setLoadRules(new SnapshotView.LoadRules2(SnapshotView.Components.ALL)).swipe().overwrite().update();
             } catch (ClearCaseException e) {
                 throw new IOException("Unable to create view", e);
             }
@@ -100,7 +100,7 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
             }
             try {
                 view = new GetView(viewroot, viewtag).setStream(devStream).createIfAbsent().get();
-                new UpdateView(view).setLoadRules(new SnapshotView.LoadRules2(view, SnapshotView.Components.ALL)).generate().update();
+                new UpdateView(view).setLoadRules(new SnapshotView.LoadRules2(SnapshotView.Components.ALL)).generate().update();
             } catch (ClearCaseException e) {
                 log.log(Level.WARNING, "Failed to update view, exception to follow", e);
                 throw new IOException("Unable to create view", e);
