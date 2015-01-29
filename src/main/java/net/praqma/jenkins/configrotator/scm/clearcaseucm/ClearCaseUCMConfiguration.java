@@ -189,7 +189,7 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
             for( Activity a : activities ) {               
                 ConfigRotatorChangeLogEntry entry = new ConfigRotatorChangeLogEntry( a.getHeadline(), a.getUser(), new ArrayList<ConfigRotatorVersion>() );
                 for( Version v : a.changeset.versions ) {
-                    entry.addVersion( new ConfigRotatorVersion( v.getSFile(), v.getVersion(), v.blame() ) );
+                    entry.addVersion( new ConfigRotatorVersion( v.getSFile(), v.getVersion(), a.getUser() ) );
                 }
 
                 entries.add( entry );
