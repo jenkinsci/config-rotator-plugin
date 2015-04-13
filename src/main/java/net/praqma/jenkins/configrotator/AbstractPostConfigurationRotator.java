@@ -18,8 +18,7 @@ public abstract class AbstractPostConfigurationRotator implements ExtensionPoint
 					return false;
 				}
 			}
-		}
-		
+		}        
 		return true;
 	}
 

@@ -12,13 +12,20 @@ import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogParser;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorCompatabilityConverter;
 
 public class FakeSCM extends AbstractConfigurationRotatorSCM {
+    
     @Override
     public String getName() {
         return "fakeSCM";
     }
 
+    @Override
+    public ConfigRotatorCompatabilityConverter getConverter() {
+        return null;
+    }
+    
     @Override
     public <TT extends AbstractTarget> void setTargets( List<TT> targets ) {
     }

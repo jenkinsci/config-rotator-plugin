@@ -25,6 +25,8 @@ import net.praqma.clearcase.ucm.view.SnapshotView;
 import net.praqma.jenkins.configrotator.*;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogParser;
+import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorClearCaseConverterImpl;
+import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorCompatabilityConverter;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 import org.kohsuke.stapler.DataBoundConstructor;
@@ -33,17 +35,24 @@ import org.kohsuke.stapler.StaplerRequest;
 public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Serializable {
 
     private static final Logger logger = Logger.getLogger( ClearCaseUCM.class.getName() );   
-    public List<ClearCaseUCMTarget> targets;
+    
+    public List<ClearCaseUCMTarget> targets;   
 
     private PVob pvob;
+    private boolean contribute = false;
 
     public ClearCaseUCM( PVob pvob ) {
         this.pvob = pvob;
     }
-
-    @DataBoundConstructor
+    
     public ClearCaseUCM( String pvobName ) {
         pvob = new PVob( pvobName );
+    }
+
+    @DataBoundConstructor
+    public ClearCaseUCM( String pvobName, boolean contribute ) {
+        pvob = new PVob( pvobName );
+        this.contribute = contribute;
     }
 
     public String getPvobName() {
@@ -119,6 +128,26 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
     @Override
     public Performer<ClearCaseUCMConfiguration> getPerform( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener ) throws IOException {
         return new UCMPerformer(build, launcher, workspace, listener);
+    }
+
+    @Override
+    public ConfigRotatorCompatabilityConverter getConverter() {
+        return new ConfigRotatorClearCaseConverterImpl();
+    }
+
+    /**
+     * @return the contribute
+     */
+    @Override
+    public boolean isContribute() {
+        return contribute;
+    }
+
+    /**
+     * @param contribute the contribute to set
+     */
+    public void setContribute(boolean contribute) {
+        this.contribute = contribute;
     }
 
     public class UCMPerformer extends Performer<ClearCaseUCMConfiguration> {

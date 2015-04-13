@@ -21,6 +21,7 @@ import static net.praqma.jenkins.configrotator.AbstractConfigurationRotatorSCM.a
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogParser;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorVersion;
+import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorCompatabilityConverter;
 
 public abstract class AbstractConfigurationRotatorSCM implements Describable<AbstractConfigurationRotatorSCM>, ExtensionPoint {
 
@@ -31,6 +32,12 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
      * Return the name of the type
      */
     public abstract String getName();
+    
+    public abstract ConfigRotatorCompatabilityConverter getConverter();
+    
+    public boolean isContribute() {
+        return false;
+    }
 
     public void setConfiguration(AbstractConfiguration configuration) {
         this.projectConfiguration = configuration;

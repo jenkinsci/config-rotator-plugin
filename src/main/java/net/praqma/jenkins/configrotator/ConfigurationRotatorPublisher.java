@@ -23,10 +23,17 @@ import hudson.tasks.BuildStepDescriptor;
 import hudson.tasks.BuildStepMonitor;
 import hudson.tasks.Notifier;
 import hudson.tasks.Publisher;
+import java.util.logging.Level;
+import jenkins.model.GlobalConfiguration;
+import jenkins.model.Jenkins;
+import net.praqma.jenkins.configrotator.scm.contribute.CompatabilityCompatible;
+import net.praqma.jenkins.configrotator.scm.contribute.RemoteCompatabilityContributor;
+import org.jenkinsci.plugins.externaldata.ExternalDataException;
+import org.jenkinsci.plugins.externaldata.ExternalDataPlugin;
 
 public class ConfigurationRotatorPublisher extends Notifier {
 
-    private static Logger logger = Logger.getLogger(ConfigurationRotatorPublisher.class.getName());
+    private static final Logger logger = Logger.getLogger(ConfigurationRotatorPublisher.class.getName());
 
     public ConfigurationRotatorPublisher() {
     }
@@ -42,7 +49,7 @@ public class ConfigurationRotatorPublisher extends Notifier {
 
         /* This must be ConfigRotator job */
         if (build.getProject().getScm() instanceof ConfigurationRotator) {
-
+            ConfigurationRotator scmConverted = (ConfigurationRotator)build.getProject().getScm();
             ConfigurationRotatorBuildAction action = build.getAction(ConfigurationRotatorBuildAction.class);
             if (action != null) {
 
@@ -51,11 +58,30 @@ public class ConfigurationRotatorPublisher extends Notifier {
                 } else {
                     action.setResult(ResultType.INCOMPATIBLE);
                 }
+                
+                /**
+                 * If the database is installed try to store information
+                 */
+                if(Jenkins.getInstance().getPlugin("external-data") != null) {
+                    if(scmConverted.getAcrs().isContribute()) {
+                        try { 
+                            CompatabilityCompatible compatible = scmConverted.getAcrs().getConverter().convert(build.getAction(ConfigurationRotatorBuildAction.class));               
+                            listener.getLogger().println(ConfigurationRotator.LOGGERNAME + "Preparing to contribute data about compatability");
+                            build.getWorkspace().act(new RemoteCompatabilityContributor(compatible, GlobalConfiguration.all().get(ExternalDataPlugin.class).getProvider(), listener));                
+                        } catch (ExternalDataException dataex) {
+                            listener.getLogger().println(dataex.getMessage());
+                        } catch (Exception ex) {
+                            listener.getLogger().println("Unknown error. See logs for more detail");
+                            logger.log(Level.WARNING, "Unknown error encountered while trying to add comptability data. Trace follows", ex);
+                        }
+                    }
+                }
 
                 out.println(ConfigurationRotator.LOGGERNAME + "Configuration is " + action.getResult());
-
+                
                 return AbstractPostConfigurationRotator.doit(build.getWorkspace(), listener, action);
 
+                
             } else {
                 DiedBecauseAction da = build.getAction(DiedBecauseAction.class);
                 out.println(ConfigurationRotator.LOGGERNAME + "Action was null, unable to set compatibility of configuration");

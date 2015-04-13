@@ -25,10 +25,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorCompatabilityConverter;
 
 public class Git extends AbstractConfigurationRotatorSCM implements Serializable {
 
-    private static Logger logger = Logger.getLogger( Git.class.getName() );
+    private static final Logger logger = Logger.getLogger( Git.class.getName() );
 
     private List<GitTarget> targets = new ArrayList<GitTarget>();
 
@@ -49,6 +50,11 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
     @Override
     public Performer getPerform( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener ) throws IOException {
         return new GitPerformer(build, launcher, workspace, listener);
+    }
+
+    @Override
+    public ConfigRotatorCompatabilityConverter getConverter() {
+        return null;
     }
 
     public class GitPerformer extends Performer<GitConfiguration> {
@@ -233,18 +239,12 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
         }
     }
 
-    /*
-    @Override
-    public void setTargets( List<AbstractTarget> targets ) {
-        this.targets = (List<GitTarget>) targets;
-    }
-    */
-
     @Override
     public <TT extends AbstractTarget> void setTargets( List<TT> targets ) {
         this.targets = (List<GitTarget>) targets;
     }
 
+    @Override
     public List<GitTarget> getTargets() {
         if( projectConfiguration != null ) {
             return getConfigurationAsTargets( (GitConfiguration) projectConfiguration );
