@@ -10,15 +10,15 @@ import hudson.remoting.Callable;
 import java.util.logging.Logger;
 import jenkins.model.GlobalConfiguration;
 import net.praqma.jenkins.configrotator.ConfigurationRotatorBuildAction;
-import org.jenkinsci.plugins.externaldata.MongoProviderImpl;
-import org.jenkinsci.plugins.externaldata.ExternalDataException;
-import org.jenkinsci.plugins.externaldata.ExternalDataPlugin;
+import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataException;
+import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataPlugin;
+import org.jenkinsci.plugins.compatibilityaction.MongoProviderImpl;
 
 /**
  *
  * @author Mads
  */
-public class CompatabilityContributor implements Callable<Boolean, ExternalDataException> {
+public class CompatabilityContributor implements Callable<Boolean, CompatibilityDataException> {
     
     private static final Logger LOG = Logger.getLogger(CompatabilityContributor.class.getName());
     private TaskListener listener;
@@ -34,15 +34,15 @@ public class CompatabilityContributor implements Callable<Boolean, ExternalDataE
     }
     
     @Override
-    public Boolean call() throws ExternalDataException {
+    public Boolean call() throws CompatibilityDataException {
         if(action != null) {
             //Only add if the action is not 'Nothing to do' (grey)
             if(action.isCompatible() && converter != null) {
                 CompatabilityCompatible compatabilityCompatible = converter.convert(action);
 
-                 if(GlobalConfiguration.all().get(ExternalDataPlugin.class).getProvider() instanceof MongoProviderImpl) {
+                 if(GlobalConfiguration.all().get(CompatibilityDataPlugin.class).getProvider() instanceof MongoProviderImpl) {
                     LOG.finest("Global configuration present, adding data to MongoDB");
-                    MongoProviderImpl impl =  ((MongoProviderImpl)GlobalConfiguration.all().get(ExternalDataPlugin.class).getProvider());
+                    MongoProviderImpl impl =  ((MongoProviderImpl)GlobalConfiguration.all().get(CompatibilityDataPlugin.class).getProvider());
                     impl.create(compatabilityCompatible);
                     LOG.finest(String.format("Done adding compatability information. Added compatability %s", compatabilityCompatible) );
                  }

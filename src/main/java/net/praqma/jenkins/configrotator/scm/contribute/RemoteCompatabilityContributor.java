@@ -8,27 +8,26 @@ package net.praqma.jenkins.configrotator.scm.contribute;
 import hudson.model.TaskListener;
 import hudson.remoting.Callable;
 import net.praqma.jenkins.configrotator.ConfigurationRotator;
-import org.jenkinsci.plugins.externaldata.ExternalDataException;
-import org.jenkinsci.plugins.externaldata.ExternalDataProvider;
-
+import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataException;
+import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataProvider;
 /**
  *
  * @author Mads
  */
-public class RemoteCompatabilityContributor implements Callable<Boolean, ExternalDataException> { 
+public class RemoteCompatabilityContributor implements Callable<Boolean, CompatibilityDataException> { 
 
     public final CompatabilityCompatible item;
-    public final ExternalDataProvider provider;
+    public final CompatibilityDataProvider provider;
     public final TaskListener listener;
 
-    public RemoteCompatabilityContributor(CompatabilityCompatible item, ExternalDataProvider provider, TaskListener listner) { 
+    public RemoteCompatabilityContributor(CompatabilityCompatible item, CompatibilityDataProvider provider, TaskListener listner) { 
         this.item = item;
         this.provider = provider;
         this.listener = listner;
     }
     
     @Override
-    public Boolean call() throws ExternalDataException {
+    public Boolean call() throws CompatibilityDataException {
         listener.getLogger().println(ConfigurationRotator.LOGGERNAME+provider);
         provider.create(item, listener);
         listener.getLogger().println(ConfigurationRotator.LOGGERNAME+"Done writing compatability object to database");

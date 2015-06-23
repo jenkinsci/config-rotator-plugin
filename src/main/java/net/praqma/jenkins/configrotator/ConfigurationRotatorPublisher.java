@@ -28,8 +28,8 @@ import jenkins.model.GlobalConfiguration;
 import jenkins.model.Jenkins;
 import net.praqma.jenkins.configrotator.scm.contribute.CompatabilityCompatible;
 import net.praqma.jenkins.configrotator.scm.contribute.RemoteCompatabilityContributor;
-import org.jenkinsci.plugins.externaldata.ExternalDataException;
-import org.jenkinsci.plugins.externaldata.ExternalDataPlugin;
+import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataException;
+import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataPlugin;
 
 public class ConfigurationRotatorPublisher extends Notifier {
 
@@ -62,13 +62,13 @@ public class ConfigurationRotatorPublisher extends Notifier {
                 /**
                  * If the database is installed try to store information
                  */
-                if(Jenkins.getInstance().getPlugin("external-data") != null) {
+                if(Jenkins.getInstance().getPlugin("compatibility-action-storage") != null) {
                     if(scmConverted.getAcrs().isContribute()) {
                         try { 
                             CompatabilityCompatible compatible = scmConverted.getAcrs().getConverter().convert(build.getAction(ConfigurationRotatorBuildAction.class));               
                             listener.getLogger().println(ConfigurationRotator.LOGGERNAME + "Preparing to contribute data about compatability");
-                            build.getWorkspace().act(new RemoteCompatabilityContributor(compatible, GlobalConfiguration.all().get(ExternalDataPlugin.class).getProvider(), listener));                
-                        } catch (ExternalDataException dataex) {
+                            build.getWorkspace().act(new RemoteCompatabilityContributor(compatible, GlobalConfiguration.all().get(CompatibilityDataPlugin.class).getProvider(), listener));                
+                        } catch (CompatibilityDataException dataex) {
                             listener.getLogger().println(dataex.getMessage());
                         } catch (Exception ex) {
                             listener.getLogger().println("Unknown error. See logs for more detail");
