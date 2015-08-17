@@ -23,13 +23,10 @@ import net.praqma.jenkins.configrotator.scm.ConfigRotatorVersion;
 
 public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUCMConfigurationComponent> {
 
-    private static Logger logger = Logger.getLogger( ClearCaseUCMConfiguration.class.getName() );
-
+    private static final Logger logger = Logger.getLogger( ClearCaseUCMConfiguration.class.getName() );
     private SnapshotView view;
 
-    public ClearCaseUCMConfiguration() {
-    }
-
+    public ClearCaseUCMConfiguration() { }
 
     @Override
     public ClearCaseUCMConfiguration clone() {
