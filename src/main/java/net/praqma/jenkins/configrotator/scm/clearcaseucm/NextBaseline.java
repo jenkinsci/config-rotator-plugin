@@ -13,6 +13,7 @@ import net.praqma.clearcase.ucm.utils.filters.NoLabels;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Comparator;
 
 /**
  * @author cwolfgang
@@ -23,26 +24,38 @@ public class NextBaseline implements FilePath.FileCallable<Baseline> {
     private Component component;
     private Project.PromotionLevel level;
     private Baseline offset;
+    private boolean useNewest;
 
+    @Deprecated
     public NextBaseline( Stream stream, Component component, Project.PromotionLevel level, Baseline offset ) {
         this.stream = stream;
         this.component = component;
         this.level = level;
         this.offset = offset;
+        this.useNewest = false;
+    }
+    
+    public NextBaseline( Stream stream, Component component, Project.PromotionLevel level, Baseline offset, boolean useNewest) {
+        this.stream = stream;
+        this.component = component;
+        this.level = level;
+        this.offset = offset;
+        this.useNewest = useNewest;
     }
 
     @Override
-    public Baseline invoke( File f, VirtualChannel channel ) throws IOException, InterruptedException {
+    public Baseline invoke( File f, VirtualChannel channel ) throws IOException, InterruptedException {        
+        
         BaselineList list = new BaselineList( stream, component, level ).
-                addFilter( new AfterBaseline( offset ) ).
-                addFilter( new NoDeliver() ).
-                addFilter( new NoLabels() ).
-                setSorting( new BaselineList.AscendingDateSort() ).                
-                setLimit( 1 );
+            addFilter( new AfterBaseline( offset ) ).
+            addFilter( new NoDeliver() ).
+            addFilter( new NoLabels() ).
+            setSorting( new BaselineList.AscendingDateSort() ).                
+            setLimit( useNewest ? 0 : 1 );
 
         try {
             list.apply();
-            return list.get( 0 );
+            return list.get( useNewest ? list.size()-1 : 0 );
         } catch( Exception e ) {
             throw new IOException( e );
         }

@@ -27,7 +27,7 @@ import org.powermock.modules.junit4.PowerMockRunner;
  */
 @RunWith(PowerMockRunner.class)
 @PrepareForTest( { Baseline.class, Component.class, Stream.class, Cleartool.class })
-public class ClearCaseDTOTests {
+public class ClearCaseDTOTest {
     
     @Test
     public void basicTest() throws Exception {       

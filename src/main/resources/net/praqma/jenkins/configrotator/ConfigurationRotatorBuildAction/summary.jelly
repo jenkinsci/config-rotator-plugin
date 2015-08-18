@@ -10,16 +10,16 @@
 				<td style="font-size:14px;text-align:left">
 				<j:choose>
 					<j:when test="${from.isCompatible()}">
-                        <b>${%Changed component}:</b><br />
-                        <i>${it.getConfiguration().getDescription(it.getBuild())}</i>
+                        <b>${%Changes}</b><br />
+                        <i>${it.getConfiguration().getDescription(it)}</i>
                         <br/>
                         ${%This configuration is compatible}
 					</j:when>
 					<j:otherwise>
-                        <b>${%Changed component}:</b><br />
-                        <i>${it.getConfiguration().getDescription(it.getBuild())}</i>
+                        <b>${%Changes}</b><br />
+                        <i>${it.getConfiguration().getDescription(it)}</i>
                         <br/>
-						 ${%This configuration is not compatible}
+                                ${%This configuration is not compatible}
 					</j:otherwise>
 				</j:choose>
 				</td>

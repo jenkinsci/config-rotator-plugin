@@ -16,7 +16,11 @@ public class ProjectBuilder {
 
     public ProjectBuilder setName( String name ) {
         this.name = name;
-
+        return this;
+    }
+    
+    public ProjectBuilder setUseNewest() {
+        this.scm.setUseNewest(true);
         return this;
     }
 

@@ -1,8 +1,6 @@
 package net.praqma.jenkins.configrotator;
 
-import hudson.model.AbstractBuild;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,13 +17,14 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
         return clazz.getName().replace( '.', '/' ).replace( '$', '/' ) + "/" + "cr.jelly";
     }
 
-    public AbstractConfigurationComponent getChangedComponent() {
+    public List<AbstractConfigurationComponent> getChangedComponents() {
+        List<AbstractConfigurationComponent> changedComponents = new ArrayList<AbstractConfigurationComponent>();
         for( AbstractConfigurationComponent configuration : this.getList() ) {
             if( configuration.isChangedLast() ) {
-                return (AbstractConfigurationComponent) configuration;
+                changedComponents.add(configuration);
             }
         }
-        return null;
+        return changedComponents;
     }
 
     /**
@@ -33,16 +32,17 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
      *
      * @return the index of the changed component. If there is no changed component default return value is -1
      */
-    public int getChangedComponentIndex() {
-        int index = -1;
-
-        for( AbstractConfigurationComponent configuration : this.getList() ) {
+    public List<Integer> getChangedComponentIndecies() {
+        List<Integer> indicies = new ArrayList<Integer>();
+        List<? extends AbstractConfigurationComponent> l = this.getList();
+        for( AbstractConfigurationComponent configuration : l ) {
             if( configuration.isChangedLast() ) {
-                index = getList().indexOf( configuration );
+                int i = l.indexOf( configuration );
+                indicies.add(i);                
             }
         }
 
-        return index;
+        return indicies;
     }
 
     @Override
@@ -58,22 +58,30 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
 
     public abstract String toHtml();
 
-    public String getDescription( AbstractBuild<?, ?> build ) {
+    
+    public String getDescription( ConfigurationRotatorBuildAction action ) {
         if( description == null ) {
-            ConfigurationRotator rotator = (ConfigurationRotator) build.getProject().getScm();
-            if( getChangedComponent() == null ) {
+            ConfigurationRotator rotator = (ConfigurationRotator) action.getBuild().getProject().getScm();
+            if( getChangedComponents().isEmpty() ) {
                 return "New Configuration - no changes yet";
             } else {
-                ConfigurationRotatorBuildAction previous = rotator.getAcrs().getPreviousResult( build, null );
-
-                //return String.format( "Commit changed:<br/>%s<br/>%s", previous.getConfigurationWithOutCast().getList().get( getChangedComponentIndex() ).prettyPrint(), getChangedComponent().prettyPrint() );
-                return String.format( "%s<br/>%s", ((T)previous.getConfigurationWithOutCast().getList().get( getChangedComponentIndex() ) ).prettyPrint(), getChangedComponent().prettyPrint() );
+                ConfigurationRotatorBuildAction previous = rotator.getAcrs().getPreviousResult( action.getBuild(), null );
+                List<Integer> changes = getChangedComponentIndecies();
+                List<AbstractConfigurationComponent> changedComps = getChangedComponents();
+                
+                StringBuilder builder = new StringBuilder();
+                for(Integer i : changes) {
+                   String c = String.format( "%s<br/>%s%n", ((T)previous.getConfigurationWithOutCast().getList().get( i) ).prettyPrint(), changedComps.get(i).prettyPrint() );
+                   builder.append(c);
+                }
+                
+                return builder.toString();
             }
         }
 
         return description;
     }
-
+    
 
     public String basicHtml( StringBuilder builder, String ... titles ) {
 

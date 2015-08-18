@@ -1,5 +1,4 @@
 package net.praqma.jenkins.configrotator;
-
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -22,14 +21,16 @@ import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogParser;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorVersion;
 import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorCompatabilityConverter;
+import org.kohsuke.stapler.DataBoundSetter;
 
 public abstract class AbstractConfigurationRotatorSCM implements Describable<AbstractConfigurationRotatorSCM>, ExtensionPoint {
 
     private static final Logger logger = Logger.getLogger(AbstractConfigurationRotatorSCM.class.getName());
     protected AbstractConfiguration projectConfiguration;
+    private boolean useNewest = false;
 
     /**
-     * Return the name of the type
+     * @return The name of the abstract configuration rotator SCM.
      */
     public abstract String getName();
     
@@ -50,6 +51,21 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     public abstract AbstractConfiguration nextConfiguration(TaskListener listener, AbstractConfiguration configuration, FilePath workspace) throws ConfigurationRotatorException;
 
     public abstract AbstractConfigurationRotatorSCM.Poller getPoller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener);
+
+    /**
+     * @return the useNewest
+     */
+    public boolean isUseNewest() {
+        return useNewest;
+    }
+
+    /**
+     * @param useNewest the useNewest to set
+     */
+    @DataBoundSetter
+    public void setUseNewest(boolean useNewest) {
+        this.useNewest = useNewest;
+    }
 
     /**
      *
@@ -286,6 +302,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
 
     /**
      * All registered {@link AbstractConfigurationRotatorSCM}s.
+     * @return 
      */
     public static DescriptorExtensionList<AbstractConfigurationRotatorSCM, ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>> all() {
         return Jenkins.getInstance().<AbstractConfigurationRotatorSCM, ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>>getDescriptorList(AbstractConfigurationRotatorSCM.class);
@@ -296,22 +313,16 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
         for (ConfigurationRotatorSCMDescriptor<?> d : all()) {
             list.add(d);
         }
-
         return list;
     }
 
     public ConfigurationRotatorBuildAction getLastResult(AbstractProject<?, ?> project, Class<? extends AbstractConfigurationRotatorSCM> clazz) {
-
         for (AbstractBuild<?, ?> b = getLastBuildToBeConsidered(project); b != null; b = b.getPreviousBuild()) {
             ConfigurationRotatorBuildAction r = b.getAction(ConfigurationRotatorBuildAction.class);
-
-            if (r != null) {
-                if (r.isDetermined() && (clazz == null || r.getClazz().equals(clazz))) {
-                    return r;
-                }
+            if (r != null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz)) ) {  
+                return r;
             }
         }
-
         return null;
     }
     
@@ -320,17 +331,12 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     }
 
     public ConfigurationRotatorBuildAction getPreviousResult(AbstractBuild<?, ?> build, Class<? extends AbstractConfigurationRotatorSCM> clazz) {
-
         for (AbstractBuild<?, ?> b = build.getPreviousBuild(); b != null; b = b.getPreviousBuild()) {
             ConfigurationRotatorBuildAction r = b.getAction(ConfigurationRotatorBuildAction.class);
-
-            if (r != null) {
-                if (r.isDetermined() && (clazz == null || r.getClazz().equals(clazz))) {
-                    return r;
-                }
+            if (r != null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz)) ) {                
+                return r;
             }
         }
-
         return null;
     }
 
@@ -338,14 +344,13 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
         ArrayList<ConfigurationRotatorBuildAction> actions = new ArrayList<ConfigurationRotatorBuildAction>();
         for (AbstractBuild<?, ?> b = getLastBuildToBeConsidered(project); b != null; b = b.getPreviousBuild()) {
             ConfigurationRotatorBuildAction r = b.getAction(ConfigurationRotatorBuildAction.class);
-            if (r != null) {
-                if (r.isDetermined() && ((clazz == null || r.getClazz().equals(clazz)))) {
-                    actions.add(r);
-                    if (actions.size() >= limit) {
-                        return actions;
-                    }
+            if (r!= null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz))) {
+                actions.add(r);
+                if (actions.size() >= limit) {
+                    return actions;
                 }
             }
+            
         }
         return actions;
     }

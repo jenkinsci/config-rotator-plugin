@@ -7,6 +7,8 @@ package net.praqma.jenkins.configrotator.scm.contribute;
 
 import hudson.model.Result;
 import java.util.Calendar;
+import java.util.List;
+import net.praqma.jenkins.configrotator.AbstractConfigurationComponent;
 import net.praqma.jenkins.configrotator.ConfigurationRotatorBuildAction;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMConfiguration;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMConfigurationComponent;
@@ -30,13 +32,14 @@ public class ConfigRotatorClearCaseConverterImpl implements ConfigRotatorCompata
         ClearCaseUCMConfigurationDTO configComponent = new ClearCaseUCMConfigurationDTO();
         
         //This is a new configuration. We need to add all components as changed
-        if(ccucmcomp.getChangedComponent() == null) {
+        if(ccucmcomp.getChangedComponents().isEmpty()) {
             configComponent.addAll(config);
         } else {
-            //Changed component
-            ClearCaseUCMConfigurationComponent compp = (ClearCaseUCMConfigurationComponent)ccucmcomp.getChangedComponent();
-            configComponent.add(ClearCaseUCMConfigurationComponentDTO.fromComponent(compp));
-            
+            //Changed components
+            List<AbstractConfigurationComponent> compp = ccucmcomp.getChangedComponents();
+            for(AbstractConfigurationComponent abcomp : compp ) {
+                configComponent.add(ClearCaseUCMConfigurationComponentDTO.fromComponent((ClearCaseUCMConfigurationComponent)abcomp));
+            }
         }
         
         ClearcaseUCMCompatability comp = new ClearcaseUCMCompatability(configComponent, Calendar.getInstance().getTime(), t.getBuild().getProject().getName(), success, config);         

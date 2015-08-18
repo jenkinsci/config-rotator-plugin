@@ -73,7 +73,7 @@ public abstract class AbstractConfigurationComponent implements Serializable, Fe
         entry.author = new Person( "Jenkins config-rotator job: "
                 + build.getParent().getDisplayName() + ", build: #" + build.getNumber() );
 
-        entry.content = configuration.getDescription( build );
+        entry.content = configuration.getDescription( action );
         Html.Break br1 = new Html.Break();
         Html.Anchor linkFeeds = new Html.Anchor( ConfigurationRotatorReport.FeedFrontpageUrl(), "Click here for a list of available feeds" );
         Html.Break br2 = new Html.Break();

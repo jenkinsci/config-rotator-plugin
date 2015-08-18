@@ -20,6 +20,7 @@ import net.praqma.clearcase.ucm.view.SnapshotView;
 import net.praqma.jenkins.configrotator.*;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorVersion;
+import org.eclipse.jgit.util.StringUtils;
 
 public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUCMConfigurationComponent> {
 
@@ -27,6 +28,8 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
     private SnapshotView view;
 
     public ClearCaseUCMConfiguration() { }
+    
+    
 
     @Override
     public ClearCaseUCMConfiguration clone() {
@@ -151,25 +154,46 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
         builder.append( "</table>" );
         return builder.toString();
     }
+    
+    /*
+        Previous list
+    */
+    
+    public static String itemizeForHtml(List<? extends AbstractConfigurationComponent> previousComponents, List<? extends AbstractConfigurationComponent> changedComponents, List<Integer> changedIndexes) {
+        if(changedIndexes.isEmpty()) {            
+            return "New Configuration - no changes yet";            
+        } else {
+            List<String> stringChanges = new ArrayList<String>();
+            for(Integer i : changedIndexes) {
+                String currentBaseline = ((ClearCaseUCMConfigurationComponent)changedComponents.get(i)).getBaseline().getNormalizedName();                    
+                String previousBaseline = ((ClearCaseUCMConfigurationComponent)previousComponents.get(i)).getBaseline().getNormalizedName();                    
+                stringChanges.add(String.format("Baseline changed from %s to %s", previousBaseline, currentBaseline));
+            }
+            return StringUtils.join(stringChanges, "<br/>");
+        }
+    }
+    
+    public static String itemizeForHtml(ConfigurationRotatorBuildAction action ) {        
+        ConfigurationRotator rotator = (ConfigurationRotator)action.getBuild().getProject().getScm();        
+        
+        //Arg1 previous configuration:
+        List<? extends AbstractConfigurationComponent> listArg1 = rotator.getAcrs().getPreviousResult(action.getBuild(), null).getConfiguration().getList();        
+        
+        //Arg2 current components             
+        AbstractConfiguration ac = action.getConfiguration();
+        List<? extends AbstractConfigurationComponent> listArg2 = ac != null ? ac.getList() : new ArrayList<AbstractConfigurationComponent>();
+        
+        //Arg3 list of indexed changes
+        List<Integer> listArg3 = ac != null ? ac.getChangedComponentIndecies() : new ArrayList<Integer>();        
+        return ClearCaseUCMConfiguration.itemizeForHtml(listArg1, listArg2, listArg3);
+    }
 
-    @Override
-    public String getDescription( AbstractBuild<?, ?> build ) {
+    public String getDescription( ConfigurationRotatorBuildAction action ) {
         /**
          * Ensure backwards compatability
          */
         if(description == null) {
-
-            ConfigurationRotator rotator = (ConfigurationRotator)build.getProject().getScm();
-            if(getChangedComponent() == null) {
-                return "New Configuration - no changes yet";
-            } else {
-                int currentComponentIndex = getChangedComponentIndex();
-                String currentBaseline = ((ClearCaseUCMConfigurationComponent)getChangedComponent()).getBaseline().getNormalizedName();
-                ConfigurationRotatorBuildAction previous = rotator.getAcrs().getPreviousResult( build, null );
-                String previousBaseline = ((ClearCaseUCMConfiguration)previous.getConfiguration()).getList().get(currentComponentIndex).getBaseline().getNormalizedName();
-
-                return String.format("Baseline changed from %s to %s", previousBaseline, currentBaseline);
-            }
+            return ClearCaseUCMConfiguration.itemizeForHtml(action);
         }
         return description;
     }

@@ -43,9 +43,6 @@ public class ConfigurationRotator extends SCM {
         COMPATIBLE,
         INCOMPATIBLE,
         FAILED,
-        /*
-           * The tests failed and was unable to determine compatibility
-           */
         UNDETERMINED
     }
 
@@ -61,16 +58,10 @@ public class ConfigurationRotator extends SCM {
     private static String VERSION = "Unresolved";
 
     static {
-        try {
-            if( Jenkins.getInstance() != null ) {
-                FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
-                VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
-            } else {
-
-            }
-        } catch ( Exception e ) {
-            /* No op */
-        }
+        if( Jenkins.getInstance() != null ) {
+            FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
+            VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
+        } 
     }
 
     public static File getFeedPath() {
@@ -249,6 +240,7 @@ public class ConfigurationRotator extends SCM {
         try {
             if( reconfigure ) {
                 logger.fine( "Reconfigured, build now!" );
+                
                 out.println( LOGGERNAME + "Configuration from scratch, build now!" );
                 return PollingResult.BUILD_NOW;
             } else if( lastAction == null)  {

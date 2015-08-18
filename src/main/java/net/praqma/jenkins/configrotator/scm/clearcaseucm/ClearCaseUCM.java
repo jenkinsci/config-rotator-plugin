@@ -7,6 +7,7 @@ import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
+import hudson.model.Descriptor;
 import hudson.model.TaskListener;
 import java.io.*;
 import java.util.ArrayList;
@@ -37,12 +38,12 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
     private static final Logger logger = Logger.getLogger( ClearCaseUCM.class.getName() );   
     
     public List<ClearCaseUCMTarget> targets;   
-
+    
     private PVob pvob;
-    private boolean contribute = false;
-
-    public ClearCaseUCM( PVob pvob ) {
-        this.pvob = pvob;
+    private boolean contribute = false;    
+    
+    public ClearCaseUCM( PVob pvob) {
+        this.pvob = pvob;        
     }
     
     public ClearCaseUCM( String pvobName ) {
@@ -50,7 +51,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
     }
 
     @DataBoundConstructor
-    public ClearCaseUCM( String pvobName, boolean contribute ) {
+    public ClearCaseUCM( String pvobName, boolean contribute ) {        
         pvob = new PVob( pvobName );
         this.contribute = contribute;
     }
@@ -287,24 +288,35 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
 
         Baseline oldest = null, current;
         ClearCaseUCMConfigurationComponent chosen = null;
-
+        
+        listener.getLogger().printf("%sUsing newsest baseline:%s%n", ConfigurationRotator.LOGGERNAME, isUseNewest());
+        
         ClearCaseUCMConfiguration nconfig = (ClearCaseUCMConfiguration) configuration.clone();
+        
+        List<Baseline> changes = new ArrayList<Baseline>();
+        
         for( ClearCaseUCMConfigurationComponent config : nconfig.getList() ) {
             /* This configuration is not fixed */
             if( !config.isFixed() ) {
-
-                try {
-                    //current = workspace.act( new GetBaselines( listener, config.getBaseline().getComponent(), config.getBaseline().getStream(), config.getPlevel(), 1, config.getBaseline() ) ).get( 0 ); //.get(0) newest baseline, they are sorted!
-                    current = workspace.act( new NextBaseline( config.getBaseline().getStream(), config.getBaseline().getComponent(), config.getPlevel(), config.getBaseline() ) );
-
-                    current = (Baseline) RemoteUtil.loadEntity( workspace, current, true );
-                    if( oldest == null || current.getDate().before( oldest.getDate() ) ) {
-                        oldest = current;
-                        chosen = config;
+                try {                    
+                    Baseline previous = config.getBaseline();
+                    current = workspace.act( new NextBaseline( 
+                            config.getBaseline().getStream(), 
+                            config.getBaseline().getComponent(), 
+                            config.getPlevel(), config.getBaseline(), isUseNewest() ) );
+ 
+                    if(isUseNewest()) {
+                        config.setChangedLast(true);
+                        config.setBaseline(current);
+                        changes.add(current);
+                        listener.getLogger().printf("%sBaseline switched from %s to %s%n", ConfigurationRotator.LOGGERNAME, previous, current);
+                    } else {
+                        if(oldest == null || current.getDate().before(oldest.getDate())) {
+                            oldest = current;
+                            chosen = config;
+                            config.setChangedLast(false);
+                        }
                     }
-                    /* Reset */
-                    config.setChangedLast( false );
-
                 } catch( Exception e ) {
                     /* No baselines found .get(0) above throws exception if no new baselines*/
                     logger.log(Level.FINE, ConfigurationRotator.LOGGERNAME + "No baselines found. Exception message follows", e );
@@ -312,16 +324,20 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
             }
         }
 
-        if( chosen != null && oldest != null ) {
-            listener.getLogger().println( ConfigurationRotator.LOGGERNAME + "There was a new baseline: " + oldest );
-            chosen.setBaseline( oldest );
-            chosen.setChangedLast( true );
-        } else {
+        //No changes for 'newest'.
+        if( isUseNewest() && changes.isEmpty() ) {
             listener.getLogger().println( ConfigurationRotator.LOGGERNAME + "No new baselines" );
             return null;
-        }
-
-        return nconfig;
+        } else if( isUseNewest() && !changes.isEmpty() ) {
+            return nconfig;
+        } else if( !isUseNewest() && chosen != null && oldest != null ) {
+            listener.getLogger().printf("%sSwitched a single baseline %s%n", ConfigurationRotator.LOGGERNAME, oldest);
+            chosen.setBaseline(oldest);
+            chosen.setChangedLast(true);
+            return nconfig;
+        } else {
+            return null;
+        }    
     }
 
     public SnapshotView createView( TaskListener listener, AbstractBuild<?, ?> build, ClearCaseUCMConfiguration configuration, FilePath workspace, PVob pvob ) throws IOException, InterruptedException {
@@ -403,7 +419,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
 
         @Override
         protected List<ConfigRotatorChangeLogEntry> getChangeLogEntries( ClearCaseUCMConfiguration configuration, ClearCaseUCMConfigurationComponent component ) throws ConfigurationRotatorException {
-            try {
+            try {                
                 return build.getWorkspace().act( new ClearCaseGetBaseLineCompare(listener, configuration, component ) );
             } catch( Exception e ) {
                 throw new ConfigurationRotatorException( e );

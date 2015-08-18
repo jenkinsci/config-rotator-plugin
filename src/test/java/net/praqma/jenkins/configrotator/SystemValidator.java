@@ -71,61 +71,73 @@ public class SystemValidator<T extends AbstractTarget> {
     }
 
     public void validate() {
-
+        
         logger.info( "-----= Validating build: " + this.build.getProject().getDisplayName() + " : " + this.build.getDisplayName() + " =-----" );
 
-        if( this.checkExpectedResult ) {
-            logger.info( "Expected result must be " + this.expectedResult + " (" + build.getResult() + ")" );
-            assertThat( "Validating expected result", build.getResult(), is( this.expectedResult ) );
-        }
-
-        if( this.checkCompatible ) {
-            logger.info( "Compatibility must be " + ( this.compatible ? "compatible" : "incompatible" ) + " (" + action.isCompatible() + ")" );
-            assertThat( "Validating compatibility", action.isCompatible(), is( this.compatible ) );
-        }
-
-        if( this.checkWasReconfigured ) {
-            logger.info( "Reconfigured must be " + this.wasReconfigured + " (" + cr.getAcrs().wasReconfigured( build.getProject() ) + ")" );
-            assertThat( "Validating reconfiguration", cr.getAcrs().wasReconfigured( build.getProject() ), is( this.wasReconfigured ) );
-        }
-
-        if( this.checkTargets ) {
-            logger.info( "Targets must be " + this.targets );
-            logger.info( "Target size must be " + this.targets.size() );
-            for( int i = 0 ; i < this.targets.size() ; i++ ) {
-                //TODO: Remove before release
-                out.println( String.format(" * %s == %s", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i )))  );
-                
-                logger.info( String.format(" * %s == %s", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i )))  );
-                assertThat( "Validating target", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i ) ) );
+        try {
+            
+            if( this.checkExpectedResult ) {
+                logger.info( "Expected result must be " + this.expectedResult + " (" + build.getResult() + ")" );
+                assertThat( "Validating expected result", build.getResult(), is( this.expectedResult ) );
             }
-        }
 
-        if( this.checkActionIsValid ) {
-            logger.info( "Action must be " + ( this.actionIsValid ? "valid" : "invalid" ) + " (" + action + ")" );
-            if( this.actionIsValid ) {
-                assertNotNull( "Action was not valid", action );
-            } else {
-                assertNull( "Action was not null", action );
+            if( this.checkCompatible ) {
+                logger.info( "Compatibility must be " + ( this.compatible ? "compatible" : "incompatible" ) + " (" + action.isCompatible() + ")" );
+                assertThat( "Validating compatibility", action.isCompatible(), is( this.compatible ) );
             }
-        }
 
-        if( this.checkPathElements ) {
-            logger.info( "Checking path elements" );
+            if( this.checkWasReconfigured ) {
+                logger.info( "Reconfigured must be " + this.wasReconfigured + " (" + cr.getAcrs().wasReconfigured( build.getProject() ) + ")" );
+                assertThat( "Validating reconfiguration", cr.getAcrs().wasReconfigured( build.getProject() ), is( this.wasReconfigured ) );
+            }
+
+            if( this.checkTargets ) {
+                logger.info( "Targets must be " + this.targets );
+                logger.info( "Target size must be " + this.targets.size() );
+                for( int i = 0 ; i < this.targets.size() ; i++ ) {
+                    //TODO: Remove before release
+                    out.println( String.format(" * %s == %s", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i )))  );
+
+                    logger.info( String.format(" * %s == %s", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i )))  );
+                    assertThat( "Validating target", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i ) ) );
+                }
+            }
+
+            if( this.checkActionIsValid ) {
+                logger.info( "Action must be " + ( this.actionIsValid ? "valid" : "invalid" ) + " (" + action + ")" );
+                if( this.actionIsValid ) {
+                    assertNotNull( "Action was not valid", action );
+                } else {
+                    assertNull( "Action was not null", action );
+                }
+            }
+
+            if( this.checkPathElements ) {
+                logger.info( "Checking path elements" );
+                try {
+                    doCheckPaths();
+                } catch( Exception e ) {
+                    fail( e.getMessage() );
+                }
+            }
+
+            if( this.checkContent ) {
+                logger.info( "Checking content of " + contentFile );
+                try {
+                    doCheckContent();
+                } catch ( Exception e ) {
+                    fail( e.getMessage() );
+                }
+            }
+            
+        } catch(AssertionError assertError) {
+            logger.info("-----=Console output for failed system=-----");
             try {
-                doCheckPaths();
-            } catch( Exception e ) {
-                fail( e.getMessage() );
-            }
-        }
-
-        if( this.checkContent ) {
-            logger.info( "Checking content of " + contentFile );
-            try {
-                doCheckContent();
-            } catch ( Exception e ) {
-                fail( e.getMessage() );
-            }
+                String console = FileUtils.readFileToString(build.getLogFile());
+                logger.info(console);
+            } catch (Exception ex) { }
+            logger.info("-----=End console output for failed system=-----");
+            throw assertError;
         }
 
         logger.info( "Successfully validated system" );

@@ -23,6 +23,10 @@ public class DetermineProject implements FilePath.FileCallable<Project> {
         this.pvob = pvob;
     }
 
+    public DetermineProject(List<String> asList) {
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
     @Override
     public Project invoke( File f, VirtualChannel channel ) throws IOException, InterruptedException {
         for( String project : projects ) {
@@ -30,8 +34,10 @@ public class DetermineProject implements FilePath.FileCallable<Project> {
                 Project ucmproject = Project.get( project, pvob ).load();
                 return ucmproject;
             } catch( ClearCaseException e ) {
+                e.printStackTrace(System.out);
                 /* Not a valid project */
             } catch( NullPointerException e ) {
+                e.printStackTrace(System.out);
                 /* project was probably null, which is allowable */
             }
         }
