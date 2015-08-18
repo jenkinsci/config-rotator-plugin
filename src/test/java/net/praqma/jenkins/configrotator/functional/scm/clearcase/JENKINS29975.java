@@ -14,7 +14,6 @@ import net.praqma.jenkins.configrotator.ConfigRotatorProject;
 import net.praqma.jenkins.configrotator.ConfigRotatorRule2;
 import net.praqma.jenkins.configrotator.ProjectBuilder;
 import net.praqma.jenkins.configrotator.SystemValidator;
-import static net.praqma.jenkins.configrotator.functional.scm.clearcase.JENKINS22058.ccenv;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCM;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMTarget;
 import net.praqma.logging.PraqmaticLogFormatter;
@@ -28,7 +27,7 @@ import org.junit.rules.TestRule;
  *
  * @author Mads
  */
-public class NoLabelsFilterTest {
+public class JENKINS29975 {
     private static final String ISSUE_NR = "jenkins_29975";    
     public static final ClearCaseRule ccenv = new ClearCaseRule(ISSUE_NR,"setup_no_label.xml");
     public static final LoggingRule lrule = new LoggingRule( "net.praqma" ).setFormat( PraqmaticLogFormatter.TINY_FORMAT );
@@ -37,7 +36,7 @@ public class NoLabelsFilterTest {
     public static final TestRule chain = RuleChain.outerRule( lrule ).around( ccenv );
     
     @ClassRule
-    public static final ConfigRotatorRule2 crrule = new ConfigRotatorRule2(NoLabelsFilterTest.class);
+    public static final ConfigRotatorRule2 crrule = new ConfigRotatorRule2(JENKINS29975.class);
         
     @Test
     public void testJENKINS29975() throws Exception {
