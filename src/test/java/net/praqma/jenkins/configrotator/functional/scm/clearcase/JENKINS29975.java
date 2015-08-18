@@ -98,7 +98,7 @@ public class JENKINS29975 {
                 
         //Last build. We have an unlabeled baseline. We should NOT build this.
         SystemValidator<ClearCaseUCMTarget> targets6 = new SystemValidator<ClearCaseUCMTarget>(build6);
-        targets6.checkExpectedResult(Result.NOT_BUILT);
+        targets6.checkExpectedResult(Result.NOT_BUILT).validate();
          
     }
 }
