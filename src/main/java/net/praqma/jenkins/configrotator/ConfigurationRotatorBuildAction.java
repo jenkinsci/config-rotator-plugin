@@ -91,4 +91,8 @@ public class ConfigurationRotatorBuildAction implements Action {
     public void setDescription(String description) {
         this.description = description;
     }
+    
+    public String getDescription() {
+        return this.description;
+    }
 }
