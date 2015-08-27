@@ -177,8 +177,11 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
         ConfigurationRotator rotator = (ConfigurationRotator)action.getBuild().getProject().getScm();        
         
         //Arg1 previous configuration:
-        List<? extends AbstractConfigurationComponent> listArg1 = rotator.getAcrs().getPreviousResult(action.getBuild(), null).getConfiguration().getList();        
-        
+        List<? extends AbstractConfigurationComponent> listArg1 = new ArrayList<AbstractConfigurationComponent>();
+        ConfigurationRotatorBuildAction crba = rotator.getAcrs().getPreviousResult(action.getBuild(), null);
+        if(crba!=null) {
+            listArg1 = crba.getConfiguration().getList();
+        }
         //Arg2 current components             
         AbstractConfiguration ac = action.getConfiguration();
         List<? extends AbstractConfigurationComponent> listArg2 = ac != null ? ac.getList() : new ArrayList<AbstractConfigurationComponent>();
