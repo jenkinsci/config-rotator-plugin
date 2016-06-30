@@ -46,7 +46,7 @@ public class ConfigurationRotatorReport extends Actionable implements Unprotecte
     }
 
     @Override
-    public synchronized List<Action> getActions() {        
+    public synchronized List<Action> getActions() {
         List<Action> actions = new ArrayList<Action>();
         actions.add(new GitFeedAction());
         actions.add(new ClearCaseUCMFeedAction());
@@ -65,12 +65,6 @@ public class ConfigurationRotatorReport extends Actionable implements Unprotecte
         }
     }
 
-    /**
-     * Transform a URL to a safe String, where all the evil chars are removed
-     *
-     * @param url
-     * @return
-     */
     public static String urlTtransform(String url) {
         return url.replaceAll("[^a-zA-Z0-9]", "_");
     }
@@ -79,10 +73,6 @@ public class ConfigurationRotatorReport extends Actionable implements Unprotecte
         return getRootUrl() + ConfigurationRotator.URL_NAME + "/";
     }
 
-    /**
-     * Factory method to create the job url for our feed.
-     *
-     */
     public static String GenerateJobUrl(AbstractBuild<?, ?> build) {
         return getRootUrl() + build.getUrl();
     }

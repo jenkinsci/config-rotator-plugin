@@ -16,8 +16,7 @@ public class GitTarget extends AbstractTarget implements Serializable, Describab
     private String commitId;
     private boolean fixed;
 
-    public GitTarget() {
-    }
+    public GitTarget() { }
 
     @DataBoundConstructor
     public GitTarget(String name, String repository, String branch, String commitId, boolean fixed) {

@@ -25,7 +25,7 @@ import org.kohsuke.stapler.DataBoundSetter;
 
 public abstract class AbstractConfigurationRotatorSCM implements Describable<AbstractConfigurationRotatorSCM>, ExtensionPoint {
 
-    private static final Logger logger = Logger.getLogger(AbstractConfigurationRotatorSCM.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(AbstractConfigurationRotatorSCM.class.getName());
     protected AbstractConfiguration projectConfiguration;
     private boolean useNewest = false;
 
@@ -33,9 +33,9 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
      * @return The name of the abstract configuration rotator SCM.
      */
     public abstract String getName();
-    
+
     public abstract ConfigRotatorCompatabilityConverter getConverter();
-    
+
     public boolean isContribute() {
         return false;
     }
@@ -85,15 +85,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
             this.workspace = workspace;
             this.listener = listener;
         }
-        
-        /**
-         * New constructor. Introduced a field that marks the SCM capable of polling while the project is building.
-         * @param project
-         * @param launcher
-         * @param workspace
-         * @param listener
-         * @param canPollWhileBuilding 
-         */
+
         public Poller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, boolean canPollWhileBuilding) {
             this.project = project;
             this.launcher = launcher;
@@ -104,8 +96,8 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
 
         public PollingResult poll(ConfigurationRotatorBuildAction action) throws AbortException {
             PrintStream out = listener.getLogger();
-            logger.fine(ConfigurationRotator.LOGGERNAME + "Polling started");
-            
+            LOGGER.fine(ConfigurationRotator.LOGGERNAME + "Polling started");
+
             if(!canPollWhileBuilding && project.isBuilding()) {
                 return PollingResult.NO_CHANGES;
             }
@@ -113,27 +105,27 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
             AbstractConfiguration configuration = action.getConfiguration();
 
             if (configuration != null) {
-                logger.fine("Resolving next configuration based on " + configuration);
+                LOGGER.fine("Resolving next configuration based on " + configuration);
                 try {
                     AbstractConfiguration other;
                     other = nextConfiguration(listener, configuration, workspace);
                     if (other != null) {
-                        logger.fine("Found changes");
+                        LOGGER.fine("Found changes");
                         printConfiguration(out, other);
                         return PollingResult.BUILD_NOW;
                     } else {
-                        logger.fine("No changes!");
+                        LOGGER.fine("No changes!");
                         return PollingResult.NO_CHANGES;
                     }
                 } catch (ConfigurationRotatorException e) {
-                    logger.log(Level.WARNING, "Unable to poll", e);
+                    LOGGER.log(Level.WARNING, "Unable to poll", e);
                     throw new AbortException(ConfigurationRotator.LOGGERNAME + "Unable to poll: " + e.getMessage());
                 } catch (Exception e) {
-                    logger.log(Level.WARNING, "Polling caught unhandled exception. Message was", e);
+                    LOGGER.log(Level.WARNING, "Polling caught unhandled exception. Message was", e);
                     throw new AbortException(ConfigurationRotator.LOGGERNAME + "Polling caught unhandled exception! Message was: " + e.getMessage());
                 }
             } else {
-                logger.fine("No previous configuration, starting first build");
+                LOGGER.fine("No previous configuration, starting first build");
                 return PollingResult.BUILD_NOW;
             }
         }
@@ -142,12 +134,12 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     /**
      * Perform the actual config rotation
      *
-     * @param build
-     * @param launcher
-     * @param workspace
-     * @param listener
-     * @return
-     * @throws IOException
+     * @param build  the current build
+     * @param launcher  the launcher
+     * @param workspace  the workspace
+     * @param listener  the listener
+     * @return A performer for the configured rotator
+     * @throws IOException when an error occurs
      */
     public abstract AbstractConfigurationRotatorSCM.Performer getPerform(AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException;
 
@@ -191,13 +183,6 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
 
     public abstract void setConfigurationByAction(AbstractProject<?, ?> project, ConfigurationRotatorBuildAction action) throws IOException;
 
-    /**
-     * This method only makes sense when the variable justConfigured is set.
-     * Meaning the configuration was just saved.
-     *
-     * @param project
-     * @return
-     */
     public abstract boolean wasReconfigured(AbstractProject<?, ?> project);
 
     public abstract ConfigRotatorChangeLogParser createChangeLogParser();
@@ -209,25 +194,25 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     public void printConfiguration(PrintStream out, AbstractConfiguration cfg) {
         if (cfg != null) {
             out.println(ConfigurationRotator.LOGGERNAME + "The configuration is:");
-            logger.fine("The configuration is:");
+            LOGGER.fine("The configuration is:");
             for (Object c : cfg.getList()) {
                 out.println(" * " + c);
-                logger.fine(" * " + c);
+                LOGGER.fine(" * " + c);
             }
             out.println("");
-            logger.fine("");
+            LOGGER.fine("");
         } else {
             out.println(ConfigurationRotator.LOGGERNAME + "The configuration is null");
-            logger.fine("The configuration is null");
+            LOGGER.fine("The configuration is null");
         }
     }
 
     /**
-     * @param changeLogFile
-     * @param listener
-     * @param build
+     * @param changeLogFile  the change log file
+     * @param listener  listener for Jenkins
+     * @param build  current build
      * @return Change log writer
-     */    
+     */
     public abstract AbstractConfigurationRotatorSCM.ChangeLogWriter getChangeLogWriter(File changeLogFile, BuildListener listener, AbstractBuild<?, ?> build);
 
     public abstract class ChangeLogWriter<C extends AbstractConfigurationComponent, T extends AbstractConfiguration<C>> {
@@ -286,7 +271,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
                 writer.println("</changelog>");
             } catch (IOException e) {
                 listener.getLogger().println("Unable to create change log. Trace written to log");
-                logger.log(Level.WARNING, "Change log writing failed", e);
+                LOGGER.log(Level.WARNING, "Change log writing failed", e);
             } finally {
                 if (writer != null) {
                     writer.close();
@@ -302,7 +287,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
 
     /**
      * All registered {@link AbstractConfigurationRotatorSCM}s.
-     * @return 
+     * @return A list of all registered config rotator SCM's
      */
     public static DescriptorExtensionList<AbstractConfigurationRotatorSCM, ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>> all() {
         return Jenkins.getInstance().<AbstractConfigurationRotatorSCM, ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>>getDescriptorList(AbstractConfigurationRotatorSCM.class);
@@ -319,13 +304,13 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     public ConfigurationRotatorBuildAction getLastResult(AbstractProject<?, ?> project, Class<? extends AbstractConfigurationRotatorSCM> clazz) {
         for (AbstractBuild<?, ?> b = getLastBuildToBeConsidered(project); b != null; b = b.getPreviousBuild()) {
             ConfigurationRotatorBuildAction r = b.getAction(ConfigurationRotatorBuildAction.class);
-            if (r != null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz)) ) {  
+            if (r != null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz)) ) {
                 return r;
             }
         }
         return null;
     }
-    
+
     public DiedBecauseAction getLastDieAction(AbstractProject<?, ?> project) {
         return project.getLastBuild() != null ? project.getLastBuild().getAction(DiedBecauseAction.class) : null;
     }
@@ -333,7 +318,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     public ConfigurationRotatorBuildAction getPreviousResult(AbstractBuild<?, ?> build, Class<? extends AbstractConfigurationRotatorSCM> clazz) {
         for (AbstractBuild<?, ?> b = build.getPreviousBuild(); b != null; b = b.getPreviousBuild()) {
             ConfigurationRotatorBuildAction r = b.getAction(ConfigurationRotatorBuildAction.class);
-            if (r != null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz)) ) {                
+            if (r != null && r.isDetermined() && (clazz == null || r.getClazz().equals(clazz)) ) {
                 return r;
             }
         }
@@ -350,7 +335,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
                     return actions;
                 }
             }
-            
+
         }
         return actions;
     }

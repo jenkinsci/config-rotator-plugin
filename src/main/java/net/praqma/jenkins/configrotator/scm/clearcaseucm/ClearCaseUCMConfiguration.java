@@ -28,8 +28,8 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
     private SnapshotView view;
 
     public ClearCaseUCMConfiguration() { }
-    
-    
+
+
 
     @Override
     public ClearCaseUCMConfiguration clone() {
@@ -55,18 +55,6 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
         return view;
     }
 
-    /**
-     * Parsing and loading the user-input config rotator configuration - targets in the GUI.
-     * Returned configuration may not be valid for building, but the clear case components can load
-     * Throws ConfigurationRotatorException if targets is not parsed correctly or can not be loaded.
-     *
-     * @param targets
-     * @param workspace
-     * @param listener
-     * @return
-     * @throws ConfigurationRotatorException if target can not be parsed, or if they can not be loaded with ClearCase
-     * @throws IOException
-     */
     public static ClearCaseUCMConfiguration getConfigurationFromTargets( List<ClearCaseUCMTarget> targets, FilePath workspace, TaskListener listener ) throws ConfigurationRotatorException {
         PrintStream out = listener.getLogger();
 
@@ -154,40 +142,36 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
         builder.append( "</table>" );
         return builder.toString();
     }
-    
-    /*
-        Previous list
-    */
-    
+
     public static String itemizeForHtml(List<? extends AbstractConfigurationComponent> previousComponents, List<? extends AbstractConfigurationComponent> changedComponents, List<Integer> changedIndexes) {
-        if(changedIndexes.isEmpty()) {            
-            return "New Configuration - no changes yet";            
+        if(changedIndexes.isEmpty()) {
+            return "New Configuration - no changes yet";
         } else {
             List<String> stringChanges = new ArrayList<String>();
             for(Integer i : changedIndexes) {
-                String currentBaseline = ((ClearCaseUCMConfigurationComponent)changedComponents.get(i)).getBaseline().getNormalizedName();                    
-                String previousBaseline = ((ClearCaseUCMConfigurationComponent)previousComponents.get(i)).getBaseline().getNormalizedName();                    
+                String currentBaseline = ((ClearCaseUCMConfigurationComponent)changedComponents.get(i)).getBaseline().getNormalizedName();
+                String previousBaseline = ((ClearCaseUCMConfigurationComponent)previousComponents.get(i)).getBaseline().getNormalizedName();
                 stringChanges.add(String.format("Baseline changed from %s to %s", previousBaseline, currentBaseline));
             }
             return StringUtils.join(stringChanges, "<br/>");
         }
     }
-    
-    public static String itemizeForHtml(ConfigurationRotatorBuildAction action ) {        
-        ConfigurationRotator rotator = (ConfigurationRotator)action.getBuild().getProject().getScm();        
-        
+
+    public static String itemizeForHtml(ConfigurationRotatorBuildAction action ) {
+        ConfigurationRotator rotator = (ConfigurationRotator)action.getBuild().getProject().getScm();
+
         //Arg1 previous configuration:
         List<? extends AbstractConfigurationComponent> listArg1 = new ArrayList<AbstractConfigurationComponent>();
         ConfigurationRotatorBuildAction crba = rotator.getAcrs().getPreviousResult(action.getBuild(), null);
         if(crba!=null) {
             listArg1 = crba.getConfiguration().getList();
         }
-        //Arg2 current components             
+        //Arg2 current components
         AbstractConfiguration ac = action.getConfiguration();
         List<? extends AbstractConfigurationComponent> listArg2 = ac != null ? ac.getList() : new ArrayList<AbstractConfigurationComponent>();
-        
+
         //Arg3 list of indexed changes
-        List<Integer> listArg3 = ac != null ? ac.getChangedComponentIndecies() : new ArrayList<Integer>();        
+        List<Integer> listArg3 = ac != null ? ac.getChangedComponentIndecies() : new ArrayList<Integer>();
         return ClearCaseUCMConfiguration.itemizeForHtml(listArg1, listArg2, listArg3);
     }
 
@@ -201,16 +185,13 @@ public class ClearCaseUCMConfiguration extends AbstractConfiguration<ClearCaseUC
         return description;
     }
 
-    /**
-     * Returns a list of files affected by the recent change.
-     */
     @Override
     public List<ConfigRotatorChangeLogEntry> difference( ClearCaseUCMConfigurationComponent component, ClearCaseUCMConfigurationComponent other ) throws ConfigurationRotatorException {
         List<ConfigRotatorChangeLogEntry> entries = new LinkedList<ConfigRotatorChangeLogEntry>();
-        
+
         try {
-            List<Activity> activities = Version.getBaselineDiff( component.getBaseline(), ( other != null ? other.getBaseline() : null ), false, new File( getView().getPath() ) );         
-            for( Activity a : activities ) {               
+            List<Activity> activities = Version.getBaselineDiff( component.getBaseline(), ( other != null ? other.getBaseline() : null ), false, new File( getView().getPath() ) );
+            for( Activity a : activities ) {
                 ConfigRotatorChangeLogEntry entry = new ConfigRotatorChangeLogEntry( a.getHeadline(), a.getUser(), new ArrayList<ConfigRotatorVersion>() );
                 for( Version v : a.changeset.versions ) {
                     entry.addVersion( new ConfigRotatorVersion( v.getSFile(), v.getVersion(), a.getUser() ) );

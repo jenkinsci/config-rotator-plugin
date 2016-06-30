@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.logging.Logger;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * This involves cloning the repository
@@ -122,5 +123,10 @@ public class ResolveConfigurationComponent implements FilePath.FileCallable<GitC
         for( String f : path.list() ) {
             logger.println( " * " + f );
         }
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 }

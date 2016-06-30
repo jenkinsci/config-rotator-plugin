@@ -15,6 +15,7 @@ import java.util.logging.Logger;
 
 import net.praqma.jenkins.configrotator.ConfigurationRotatorException;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  *
@@ -40,6 +41,11 @@ public class ClearCaseGetBaseLineCompare implements FilePath.FileCallable<List<C
             logger.log( Level.WARNING, "Unable to get differences for " + component, ex );
             throw new IOException( "Unable to get differences for " + component, ex );
         }
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 
 }

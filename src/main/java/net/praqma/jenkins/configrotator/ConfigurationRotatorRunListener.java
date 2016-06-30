@@ -18,33 +18,41 @@ import java.util.logging.Logger;
 import net.praqma.util.xml.feed.*;
 
 /**
+ * <p>
  * RunLister implements onCompleted method that runs for every job on Jenkins
  * when completed, thus we check if it is a CR job and harvest the result of
  * the configuration.
- * <p/>
+ * </p>
+ * <p>
  * Design notes - using a runListener vs. notifier for writing feed
  * -----------------------------------------------------------------
- * <p/>
+ * </p>
+ * <p>
  * http://jenkinshost/config-rotator shows a summary with atom-feed and links
  * for the feed for every configuration of component tried with the config-rotator
  * plug-in (from now denoted CR) on the Jenkins host.
- * <p/>
+ * </p>
+ * <p>
  * That is every job using the plug-in could have a result that should be shown
  * in one or more feeds, thus we must "subscribe" or ensure these data are
  * collected.
- * <p/>
+ * </p>
+ * <p>
  * We already decided for an easy format for storing the feed - one file per
  * component in the feed XML format.
- * <p/>
+ * </p>
+ * <p>
  * The feed can be written easily from two places: a runlistener or from the
  * notifier part of CR.
- * <p/>
+ * </p>
+ * <p>
  * We chose to implement this as a runlistener we find the runlistener way of
  * doing it more clear instead of using the notifier (the post build step).
  * We know there might be some concurrency problems writing the feed files
  * if a lots of build finish at the same time.
  * TODO: This will be handled later and implemented.
- * <p/>
+ * </p>
+ * <p>
  * Writing feeds: we would have liked to use a fully tested and mature open
  * source library for writing feeds, and did a short searching and found to
  * large one: ROME and Apache Abdera
@@ -56,7 +64,7 @@ import net.praqma.util.xml.feed.*;
  * and we do to with some internal libraries (cool test case not being able to
  * use setup.xml across projects).
  * Thus we ended up creating our own simple framework in praqmajutils
- *
+ * </p>
  * @author bue
  */
 @Extension
@@ -77,16 +85,17 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
      * Writes entries to an existing feed, which is read from the component-
      * feedfile. If this file does not exist, an initial feed is created incl.
      * the file.
-     * <p/>
+     * <p>
      * Upon adding the new entry, the feed is written to the file
      * (overwriting the existing feed).
      * Feed clients uses the entries id and timestamps, so they only see
      * the new entries added.
-     * <p/>
+     * </p>
+     * <p>
      * A component, as we for now only speak ClearCase, is only unique combined
      * with the PVob-name, so component feed-files are stored in folders under
      * there PVob in the feed-directory.
-     * <p/>
+     * </p>
      * When a configuration is know to be compatible or incompatible, several
      * feeds must be updated. Say CR1-1 and CR2-1 and CR3-2 all in PVob 'myPVob'
      * was found to be compatible, then three feed are updated.
@@ -96,8 +105,8 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
      * They will be stored in:
      * JENKINNS-ROOTFOLDER/config-rotator/feed/myPVob/CR1-1.xml etc.
      *
-     * @param run
-     * @param listener
+     * @param run current running build
+     * @param listener Jenkins listener
      */
     @Override
     public void onCompleted( Run run, TaskListener listener ) {
@@ -108,7 +117,7 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
 
             AbstractConfigurationRotatorSCM acscm = ((ConfigurationRotator)build.getProject().getScm()).getAcrs();
             ConfigurationRotatorBuildAction action = build.getAction( ConfigurationRotatorBuildAction.class );
-            // if no action, build failed someway to set ConfigurationRotatorBuildAction, thus we can not 
+            // if no action, build failed someway to set ConfigurationRotatorBuildAction, thus we can not
             // say anything about configuration.
             if( action != null ) {
                 AbstractConfiguration configuration = action.getConfigurationWithOutCast();
@@ -116,8 +125,8 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
 
                 try {
 
-                    for( AbstractConfigurationComponent component : components ) {                        
-                        File feedFile = component.getFeedFile( acscm.getFeedPath() );                        
+                    for( AbstractConfigurationComponent component : components ) {
+                        File feedFile = component.getFeedFile( acscm.getFeedPath() );
                         Date updated = new Date();
 
                         Feed feed = component.getFeed( feedFile, acscm.getFeedURL(), updated );
@@ -143,14 +152,14 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
      * file with atoms feed. If entries have unique id that are not changes,
      * subscribers will see only new ones.
      *
-     * @param feed
-     * @throws IOException
-     * @throws FeedException
+     * @param feed feed
+     * @throws IOException when an error occurs (General)
+     * @throws FeedException when error in feeed
      */
     private void writeFeedToFile( Feed feed, File feedFile ) throws FeedException {
         Writer writer = null;
-        try {            
-            if( !feedFile.exists() ) {                
+        try {
+            if( !feedFile.exists() ) {
                 if( !feedFile.getParentFile().exists() ) {
                     // create file including dirs
                     if( !feedFile.getParentFile().mkdirs() ) {

@@ -114,13 +114,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         return false;
     }
 
-    /**
-     * @param project
-     * @param launcher
-     * @param workspace
-     * @param listener
-     * @return a poller for the scm.
-     */
     @Override
     public Poller getPoller( AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener ) {
         return new Poller(project, launcher, workspace, listener, false );
@@ -137,17 +130,11 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         return new ConfigRotatorClearCaseConverterImpl();
     }
 
-    /**
-     * @return the contribute
-     */
     @Override
     public boolean isContribute() {
         return contribute;
     }
 
-    /**
-     * @param contribute the contribute to set
-     */
     public void setContribute(boolean contribute) {
         this.contribute = contribute;
     }
@@ -196,13 +183,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         }
     }
 
-    /**
-     * Reconfigure the project configuration given the targets from the configuration page
-     *
-     * @param workspace A FilePath
-     * @param listener  A TaskListener
-     * @throws IOException
-     */
     public void reconfigure( FilePath workspace, TaskListener listener ) throws IOException {
         logger.fine( "Getting configuration" );
         PrintStream out = listener.getLogger();
@@ -236,18 +216,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         }
     }
 
-    /**
-     * Does a simple check of the config-rotator configuration.
-     * We do implicitly assume the configuration can be loaded and clear case objects
-     * exists. The checks is done only with regards to configuration rotation, eg.
-     * not using the same component twice.
-     * 1) is a Clear Case UCM component used more than once in the configuration?
-     *
-     * @param cfg config rotator configuration
-     * @throws AbortException
-     */
-
-    public void simpleCheckOfConfiguration( AbstractConfiguration cfg ) throws ConfigurationRotatorException {
+    public static void simpleCheckOfConfiguration( AbstractConfiguration cfg ) throws ConfigurationRotatorException {
         if( cfg instanceof ClearCaseUCMConfiguration ) {
             ClearCaseUCMConfiguration config = (ClearCaseUCMConfiguration) cfg;
             Set<Component> ccucmcfgset = new HashSet<Component>();
@@ -275,15 +244,6 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
         }
     }
 
-
-    /**
-     * nextConfiguration is used to indicate if a new configuration exists. Essentially the 'poll' operation.
-     * @param listener
-     * @param configuration
-     * @param workspace
-     * @return A new configuration when there are SCM changes, null when no changes.
-     * @throws ConfigurationRotatorException
-     */
     @Override
     public AbstractConfiguration nextConfiguration( TaskListener listener, AbstractConfiguration configuration, FilePath workspace ) throws ConfigurationRotatorException {
 

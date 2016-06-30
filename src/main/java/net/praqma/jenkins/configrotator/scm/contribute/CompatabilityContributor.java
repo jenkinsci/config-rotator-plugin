@@ -13,26 +13,27 @@ import net.praqma.jenkins.configrotator.ConfigurationRotatorBuildAction;
 import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataException;
 import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataPlugin;
 import org.jenkinsci.plugins.compatibilityaction.MongoProviderImpl;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  *
  * @author Mads
  */
 public class CompatabilityContributor implements Callable<Boolean, CompatibilityDataException> {
-    
+
     private static final Logger LOG = Logger.getLogger(CompatabilityContributor.class.getName());
     private TaskListener listener;
     private ConfigurationRotatorBuildAction action;
     private ConfigRotatorCompatabilityConverter converter;
 
     public CompatabilityContributor() { }
-    
+
     public CompatabilityContributor(TaskListener listener, ConfigurationRotatorBuildAction action, ConfigRotatorCompatabilityConverter converter) {
         this.listener = listener;
         this.action = action;
         this.converter = converter;
     }
-    
+
     @Override
     public Boolean call() throws CompatibilityDataException {
         if(action != null) {
@@ -49,10 +50,10 @@ public class CompatabilityContributor implements Callable<Boolean, Compatibility
             }
 
         }
-        
+
         listener.getLogger().println("Added comptability in Remote!");
         return true;
-    }       
+    }
 
     /**
      * @return the listener
@@ -66,5 +67,10 @@ public class CompatabilityContributor implements Callable<Boolean, Compatibility
      */
     public void setListener(TaskListener listener) {
         this.listener = listener;
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 }

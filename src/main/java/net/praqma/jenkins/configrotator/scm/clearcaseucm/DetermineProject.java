@@ -9,6 +9,7 @@ import net.praqma.clearcase.ucm.entities.Project;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * @author cwolfgang
@@ -43,6 +44,11 @@ public class DetermineProject implements FilePath.FileCallable<Project> {
         }
 
         throw new IOException( "No such project" );
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 
 }

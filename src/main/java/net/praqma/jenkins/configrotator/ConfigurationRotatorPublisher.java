@@ -58,16 +58,16 @@ public class ConfigurationRotatorPublisher extends Notifier {
                 } else {
                     action.setResult(ResultType.INCOMPATIBLE);
                 }
-                
+
                 /**
                  * If the database is installed try to store information
                  */
                 if(Jenkins.getInstance().getPlugin("compatibility-action-storage") != null) {
                     if(scmConverted.getAcrs().isContribute()) {
-                        try { 
-                            CompatabilityCompatible compatible = scmConverted.getAcrs().getConverter().convert(build.getAction(ConfigurationRotatorBuildAction.class));               
+                        try {
+                            CompatabilityCompatible compatible = scmConverted.getAcrs().getConverter().convert(build.getAction(ConfigurationRotatorBuildAction.class));
                             listener.getLogger().println(ConfigurationRotator.LOGGERNAME + "Preparing to contribute data about compatability");
-                            build.getWorkspace().act(new RemoteCompatabilityContributor(compatible, GlobalConfiguration.all().get(CompatibilityDataPlugin.class).getProvider(), listener));                
+                            build.getWorkspace().act(new RemoteCompatabilityContributor(compatible, GlobalConfiguration.all().get(CompatibilityDataPlugin.class).getProvider(), listener));
                         } catch (CompatibilityDataException dataex) {
                             listener.getLogger().println(dataex.getMessage());
                         } catch (Exception ex) {
@@ -78,10 +78,10 @@ public class ConfigurationRotatorPublisher extends Notifier {
                 }
 
                 out.println(ConfigurationRotator.LOGGERNAME + "Configuration is " + action.getResult());
-                
+
                 return AbstractPostConfigurationRotator.doit(build.getWorkspace(), listener, action);
 
-                
+
             } else {
                 DiedBecauseAction da = build.getAction(DiedBecauseAction.class);
                 out.println(ConfigurationRotator.LOGGERNAME + "Action was null, unable to set compatibility of configuration");
@@ -137,14 +137,6 @@ public class ConfigurationRotatorPublisher extends Notifier {
             return "Configuration Rotator Publisher";
         }
 
-        /**
-         * Fix for save issues.
-         *
-         * @param req
-         * @param json
-         * @return
-         * @throws hudson.model.Descriptor.FormException
-         */
         @Override
         public boolean configure(StaplerRequest req, JSONObject json) throws Descriptor.FormException {
             save();

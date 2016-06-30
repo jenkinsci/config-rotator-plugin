@@ -13,7 +13,7 @@ import net.praqma.clearcase.ucm.utils.filters.NoLabels;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Comparator;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * @author cwolfgang
@@ -34,7 +34,7 @@ public class NextBaseline implements FilePath.FileCallable<Baseline> {
         this.offset = offset;
         this.useNewest = false;
     }
-    
+
     public NextBaseline( Stream stream, Component component, Project.PromotionLevel level, Baseline offset, boolean useNewest) {
         this.stream = stream;
         this.component = component;
@@ -44,13 +44,13 @@ public class NextBaseline implements FilePath.FileCallable<Baseline> {
     }
 
     @Override
-    public Baseline invoke( File f, VirtualChannel channel ) throws IOException, InterruptedException {        
-        
+    public Baseline invoke( File f, VirtualChannel channel ) throws IOException, InterruptedException {
+
         BaselineList list = new BaselineList( stream, component, level ).
             addFilter( new AfterBaseline( offset ) ).
             addFilter( new NoDeliver() ).
             addFilter( new NoLabels() ).
-            setSorting( new BaselineList.AscendingDateSort() ).                
+            setSorting( new BaselineList.AscendingDateSort() ).
             setLimit( useNewest ? 0 : 1 );
 
         try {
@@ -59,5 +59,10 @@ public class NextBaseline implements FilePath.FileCallable<Baseline> {
         } catch( Exception e ) {
             throw new IOException( e );
         }
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 }

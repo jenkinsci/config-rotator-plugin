@@ -32,8 +32,8 @@ public class ConfigurationRotatorProjectAction implements ProminentProjectAction
     /**
      * New method extracts the latest builds.
      *
-     * @param number
-     * @return
+     * @param number  number
+     * @return a list of {@link ConfigurationRotatorBuildAction}s
      */
     public ArrayList<ConfigurationRotatorBuildAction> getLastActions(int number) {
         SCM scm = project.getScm();

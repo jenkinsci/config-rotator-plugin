@@ -12,6 +12,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import org.jenkinsci.remoting.RoleChecker;
 
 public class ResolveNextCommit implements FilePath.FileCallable<RevCommit> {
 
@@ -78,6 +79,11 @@ public class ResolveNextCommit implements FilePath.FileCallable<RevCommit> {
         logger.fine( "Next is " + ( next == null ? "N/A" : next.getName() ) );
 
         return next;
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 
 }

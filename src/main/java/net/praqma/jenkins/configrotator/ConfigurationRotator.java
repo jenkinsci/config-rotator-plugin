@@ -61,7 +61,7 @@ public class ConfigurationRotator extends SCM {
         if( Jenkins.getInstance() != null ) {
             FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
             VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
-        } 
+        }
     }
 
     public static File getFeedPath() {
@@ -101,7 +101,7 @@ public class ConfigurationRotator extends SCM {
             return null;
         }
     }
-    
+
     @Override
     public boolean checkout( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener, File file ) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
@@ -145,11 +145,11 @@ public class ConfigurationRotator extends SCM {
 
             }
         } catch( Exception e ) {
-            logger.log( Level.SEVERE, "Unable to create configuration", e );            
+            logger.log( Level.SEVERE, "Unable to create configuration", e );
             DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die, acrs.getTargets() );
             build.addAction( da );
             throw new AbortException( e.getMessage() );
-        } 
+        }
 
         if( !performResult ) {
             // ConfigurationRotator.perform will return false only if no new baselines found
@@ -223,7 +223,7 @@ public class ConfigurationRotator extends SCM {
             logger.fine( "A build already in queue - cancelling poll" );
             return PollingResult.NO_CHANGES;
         }
-    
+
         /*
            * Determine if the job was reconfigured
            */
@@ -240,7 +240,7 @@ public class ConfigurationRotator extends SCM {
         try {
             if( reconfigure ) {
                 logger.fine( "Reconfigured, build now!" );
-                
+
                 out.println( LOGGERNAME + "Configuration from scratch, build now!" );
                 return PollingResult.BUILD_NOW;
             } else if( lastAction == null)  {
@@ -267,7 +267,7 @@ public class ConfigurationRotator extends SCM {
     /**
      * Delegate the change log parser to abstract subtypes.
      *
-     * @return
+     * @return a new change log parser
      */
     @Override
     public ChangeLogParser createChangeLogParser() {
@@ -288,7 +288,7 @@ public class ConfigurationRotator extends SCM {
 
         @Override
         public SCM newInstance( StaplerRequest req, JSONObject formData ) throws FormException {
-            ConfigurationRotator r = (ConfigurationRotator) super.newInstance( req, formData );            
+            ConfigurationRotator r = (ConfigurationRotator) super.newInstance( req, formData );
             ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM> d = (ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>) r.getAcrs().getDescriptor();
             r.acrs = d.newInstance( req, formData, r.acrs );
             save();

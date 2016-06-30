@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import org.jenkinsci.remoting.RoleChecker;
 
 public class ResolveChangeLog implements FilePath.FileCallable<ConfigRotatorChangeLogEntry> {
 
@@ -60,6 +61,11 @@ public class ResolveChangeLog implements FilePath.FileCallable<ConfigRotatorChan
         }
 
         return entry;
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 
 }

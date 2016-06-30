@@ -8,11 +8,12 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 
 import java.io.File;
 import java.io.IOException;
+import org.jenkinsci.remoting.RoleChecker;
 
 /**
  * @author cwolfgang
  */
-public class Checkout implements FilePath.FileCallable< Boolean> {
+public class Checkout implements FilePath.FileCallable<Boolean> {
 
     private String commitId;
     private String name;
@@ -40,5 +41,10 @@ public class Checkout implements FilePath.FileCallable< Boolean> {
         }
 
         return true;
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 }

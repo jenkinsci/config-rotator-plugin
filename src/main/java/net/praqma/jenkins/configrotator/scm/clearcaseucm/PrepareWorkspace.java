@@ -21,6 +21,7 @@ import net.praqma.clearcase.ucm.view.GetView;
 import net.praqma.clearcase.ucm.view.SnapshotView;
 import net.praqma.clearcase.ucm.view.UpdateView;
 import net.praqma.jenkins.configrotator.ConfigurationRotator;
+import org.jenkinsci.remoting.RoleChecker;
 
 public class PrepareWorkspace implements FileCallable<SnapshotView> {
 
@@ -64,21 +65,21 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
 
             try {
                 /**
-                 * FogBugz 11220, when we get the view, we must make sure that the view is present. 
+                 * FogBugz 11220, when we get the view, we must make sure that the view is present.
                  */
-                view = new GetView(viewroot, viewtag).createIfAbsent().setStream(devStream).get();                
+                view = new GetView(viewroot, viewtag).createIfAbsent().setStream(devStream).get();
             } catch (ClearCaseException e) {
                 throw new IOException("Could not get view", e);
             }
             try {
-                Rebase rb = new Rebase(devStream);                
+                Rebase rb = new Rebase(devStream);
                 out.println(ConfigurationRotator.LOGGERNAME + "Rebasing stream to " + devStream.getNormalizedName());
-                rb.setViewTag(viewtag).addBaselines(baselines).dropFromStream().rebase(true, true);                
-            } catch (RebaseException e) {                
+                rb.setViewTag(viewtag).addBaselines(baselines).dropFromStream().rebase(true, true);
+            } catch (RebaseException e) {
                 throw new IOException("Failed to rebase the current stream " + devStream, e);
             } catch (ClearCaseException reb) {
                 throw new IOException("Could not load " + devStream, reb);
-            } 
+            }
 
             /* The view */
             try {
@@ -108,5 +109,10 @@ public class PrepareWorkspace implements FileCallable<SnapshotView> {
         }
 
         return view;
+    }
+
+    @Override
+    public void checkRoles(RoleChecker rc) throws SecurityException {
+        //NO-OP
     }
 }
