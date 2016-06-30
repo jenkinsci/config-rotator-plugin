@@ -1,6 +1,7 @@
 package net.praqma.jenkins.configrotator;
 
 import hudson.Extension;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
 import static javaposse.jobdsl.dsl.Preconditions.checkArgument;
@@ -11,6 +12,7 @@ import javaposse.jobdsl.plugin.ContextExtensionPoint;
 import javaposse.jobdsl.plugin.DslExtensionMethod;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCM;
 import net.praqma.jenkins.configrotator.scm.git.Git;
+import net.praqma.jenkins.configrotator.scm.git.GitTarget;
 
 /*
 
@@ -140,7 +142,7 @@ public class ConfigRotatorJobDslExtension extends ContextExtensionPoint {
         if (scm.equals("git")) {
             GitJobDslContext context = new GitJobDslContext();
             executeInContext(closure, context);
-            Git git = new Git();
+            Git git = new Git(new ArrayList<GitTarget>());
             git.setTargets(context.targets);
             git.setUseNewest(false);
             acrs = git;

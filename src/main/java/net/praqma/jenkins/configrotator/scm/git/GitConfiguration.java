@@ -12,7 +12,7 @@ import java.util.logging.Logger;
 
 public class GitConfiguration extends AbstractConfiguration<GitConfigurationComponent> {
 
-    private static Logger logger = Logger.getLogger( GitConfiguration.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger( GitConfiguration.class.getName() );
 
     private GitConfiguration() {}
 
@@ -20,16 +20,16 @@ public class GitConfiguration extends AbstractConfiguration<GitConfigurationComp
         for( AbstractTarget t : targets ) {
             GitTarget target = (GitTarget)t;
 
-            logger.fine("Getting component for " + target);
+            LOGGER.fine("Getting component for " + target);
             GitConfigurationComponent c = null;
             try {
                 c = workspace.act( new ResolveConfigurationComponent( listener, target.getName(), target.getRepository(), target.getBranch(), target.getCommitId(), target.getFixed() ) );
             } catch( Exception e ) {
-                logger.log( Level.WARNING, "Whoops", e );
+                LOGGER.log( Level.WARNING, "Whoops", e );
                 throw new ConfigurationRotatorException( "Unable to get component for " + target, e );
             }
 
-            logger.fine("Adding " + c);
+            LOGGER.fine("Adding " + c);
             list.add( c );
         }
     }

@@ -12,11 +12,8 @@ import hudson.util.FormValidation;
 import net.praqma.jenkins.configrotator.*;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogParser;
-import net.sf.json.JSONArray;
-import net.sf.json.JSONObject;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 import javax.servlet.ServletException;
 import java.io.*;
@@ -29,12 +26,13 @@ import net.praqma.jenkins.configrotator.scm.contribute.ConfigRotatorCompatabilit
 
 public class Git extends AbstractConfigurationRotatorSCM implements Serializable {
 
-    private static final Logger logger = Logger.getLogger( Git.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger( Git.class.getName() );
 
     private List<GitTarget> targets = new ArrayList<GitTarget>();
 
     @DataBoundConstructor
-    public Git() {
+    public Git(List<GitTarget> targets) {
+        this.targets = targets;
     }
 
     @Override
@@ -114,13 +112,13 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
         /* Check if the project configuration is even set */
         if( configuration == null ) {
-            logger.fine( "Configuration was null" );
+            LOGGER.fine( "Configuration was null" );
             return true;
         }
 
         /* Check if the sizes are equal */
         if( targets.size() != configuration.getList().size() ) {
-            logger.fine( "Size was not equal" );
+            LOGGER.fine( "Size was not equal" );
             return true;
         }
 
@@ -131,7 +129,7 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
             if( !t.getBranch().equals( c.getBranch()) ||
                 !t.getRepository().equals( c.getRepository() ) ||
                 !t.getCommitId().equals( c.getCommitId() )) {
-                logger.finer( "Configuration was not equal" );
+                LOGGER.finer( "Configuration was not equal" );
                 return true;
             }
         }
@@ -157,10 +155,10 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
         @Override
         protected List<ConfigRotatorChangeLogEntry> getChangeLogEntries( GitConfiguration configuration, GitConfigurationComponent configurationComponent ) throws ConfigurationRotatorException {
-            logger.fine( "Change log entry, " + configurationComponent );
+            LOGGER.fine( "Change log entry, " + configurationComponent );
             try {
                 ConfigRotatorChangeLogEntry entry = build.getWorkspace().act( new ResolveChangeLog( configurationComponent.getName(), configurationComponent.getCommitId() ) );
-                logger.fine("ENTRY: " + entry);
+                LOGGER.fine("ENTRY: " + entry);
                 return Collections.singletonList( entry );
             } catch( Exception e ) {
                 throw new ConfigurationRotatorException( "Unable to resolve changelog " + configurationComponent.getCommitId(), e );
@@ -170,7 +168,7 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
     @Override
     public AbstractConfiguration nextConfiguration( TaskListener listener, AbstractConfiguration configuration, FilePath workspace ) throws ConfigurationRotatorException {
-        logger.fine( "Getting next Git configuration: " + configuration);
+        LOGGER.fine( "Getting next Git configuration: " + configuration);
 
         RevCommit oldest = null;
         GitConfigurationComponent chosen = null;
@@ -180,14 +178,14 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
         for( GitConfigurationComponent config : nconfig.getList() ) {
             if( !config.isFixed() ) {
                 try {
-                    logger.fine("Config: " + config);
+                    LOGGER.fine("Config: " + config);
                     RevCommit commit = workspace.act( new ResolveNextCommit( config.getName(), config.getCommitId() ) );
                     if( commit != null ) {
-                        logger.fine( "Current commit: " + commit.getName() );
-                        logger.fine( "Current commit: " + commit.getCommitTime() );
+                        LOGGER.fine( "Current commit: " + commit.getName() );
+                        LOGGER.fine( "Current commit: " + commit.getCommitTime() );
                         if( oldest != null ) {
-                            logger.fine( "Oldest  commit: " + oldest.getName() );
-                            logger.fine( "Oldest  commit: " + oldest.getCommitTime() );
+                            LOGGER.fine( "Oldest  commit: " + oldest.getName() );
+                            LOGGER.fine( "Oldest  commit: " + oldest.getCommitTime() );
                         }
                         if( oldest == null || commit.getCommitTime() < oldest.getCommitTime() ) {
                             oldest = commit;
@@ -198,22 +196,22 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
                     }
 
                 } catch( Exception e ) {
-                    logger.log( Level.FINE, "No commit found", e );
+                    LOGGER.log( Level.FINE, "No commit found", e );
                 }
 
             }
         }
 
-        logger.fine( "Configuration component: " + chosen );
-        logger.fine( "Oldest valid commit: " + oldest );
+        LOGGER.fine( "Configuration component: " + chosen );
+        LOGGER.fine( "Oldest valid commit: " + oldest );
         if( chosen != null && oldest != null ) {
-            logger.fine( "There was a new commit: " + oldest );
+            LOGGER.fine( "There was a new commit: " + oldest );
             listener.getLogger().println( ConfigurationRotator.LOGGERNAME + "Next commit: " + chosen );
             chosen.setCommitId( oldest.getName() );
             chosen.setChangedLast( true );
         } else {
             listener.getLogger().println( ConfigurationRotator.LOGGERNAME + "No new commits" );
-            logger.fine( "No new commits" );
+            LOGGER.fine( "No new commits" );
             return null;
         }
 
@@ -246,11 +244,7 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
     @Override
     public List<GitTarget> getTargets() {
-        if( projectConfiguration != null ) {
-            return getConfigurationAsTargets( (GitConfiguration) projectConfiguration );
-        } else {
-            return targets;
-        }
+        return targets;
     }
 
 
@@ -269,32 +263,6 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
         public FormValidation doTest(  ) throws IOException, ServletException {
             return FormValidation.ok();
-        }
-
-        @Override
-        public AbstractConfigurationRotatorSCM newInstance( StaplerRequest req, JSONObject formData, AbstractConfigurationRotatorSCM i ) throws FormException {
-            Git instance = (Git)i;
-            //Default to an empty configuration. When the plugin is first started this should be an empty list
-            List<GitTarget> targets = new ArrayList<GitTarget>();
-
-
-            try {
-                JSONArray obj = formData.getJSONObject( "acrs" ).getJSONArray( "targets" );
-                targets = req.bindJSONToList( GitTarget.class, obj );
-            } catch (net.sf.json.JSONException jasonEx) {
-                //This happens if the targets is not an array!
-                JSONObject obj = formData.getJSONObject( "acrs" ).getJSONObject( "targets" );
-                if(obj != null) {
-                    GitTarget target = req.bindJSON(GitTarget.class, obj);
-                    if(target != null && target.getRepository() != null && !target.getRepository().equals("")) {
-                        targets.add(target);
-                    }
-                }
-            }
-            instance.targets = targets;
-
-            save();
-            return instance;
         }
 
         public List<GitTarget> getTargets( Git instance ) {

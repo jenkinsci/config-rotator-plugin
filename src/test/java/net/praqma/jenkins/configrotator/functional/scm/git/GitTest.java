@@ -27,6 +27,7 @@ import org.junit.rules.TestRule;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.logging.Level;
 
 public class GitTest {
@@ -48,7 +49,7 @@ public class GitTest {
         git.initialize( folder.newFolder() );
         RevCommit commit1 = git.createCommit( "text.txt", "1" );
 
-        ProjectBuilder builder = new ProjectBuilder( new Git() ).setName( "git-test-01" );
+        ProjectBuilder builder = new ProjectBuilder( new Git(new ArrayList<GitTarget>()) ).setName( "git-test-01" );
         ConfigRotatorProject project = builder.getProject();
         project.addTarget( new GitTarget( "test", git.getRepo(), "master", commit1.getName(), false ) );
 
@@ -71,7 +72,7 @@ public class GitTest {
         git.initialize( folder.newFolder() );
         RevCommit commit1 = git.createCommit( "text.txt", "1" );
 
-        ProjectBuilder builder = new ProjectBuilder( new Git() ).setName( "git-test-02" );
+        ProjectBuilder builder = new ProjectBuilder( new Git(new ArrayList<GitTarget>()) ).setName( "git-test-02" );
         ConfigRotatorProject project = builder.getProject();
         project.addTarget( new GitTarget( "test", git.getRepo(), "master", commit1.getName(), false ) );
 
@@ -101,7 +102,7 @@ public class GitTest {
         RevCommit commit1 = git.createCommit( "text.txt", "1" );
         RevCommit commit2 = git.createCommit( "text.txt", "2" );
 
-        ProjectBuilder builder = new ProjectBuilder( new Git() ).setName( "git-test-03" );
+        ProjectBuilder builder = new ProjectBuilder( new Git(new ArrayList<GitTarget>()) ).setName( "git-test-03" );
         ConfigRotatorProject project = builder.getProject();
         project.addTarget( new GitTarget( "test", git.getRepo(), "master", commit1.getName(), false ) );
 

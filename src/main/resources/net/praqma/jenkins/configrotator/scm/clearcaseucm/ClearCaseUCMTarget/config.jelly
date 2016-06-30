@@ -1,0 +1,21 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <tr>
+        <td>
+            Baseline
+            <f:textbox field="baselineName"/>
+        </td>
+        <td>
+            Promotion level
+            <f:select field="level"/>
+        </td>
+        <td>
+            <tr>
+                <td>
+                    Fixed
+                    <f:checkbox field="fixed"/>
+                </td>
+            </tr>
+        </td>
+    </tr>
+    <f:repeatableDeleteButton/>
+</j:jelly>

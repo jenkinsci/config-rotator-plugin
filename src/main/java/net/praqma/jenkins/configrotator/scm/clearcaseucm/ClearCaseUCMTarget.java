@@ -1,10 +1,14 @@
 package net.praqma.jenkins.configrotator.scm.clearcaseucm;
 
+import hudson.Extension;
+import hudson.model.Describable;
+import hudson.model.Descriptor;
+import hudson.util.ListBoxModel;
 import net.praqma.clearcase.ucm.entities.Project;
 import net.praqma.jenkins.configrotator.AbstractTarget;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class ClearCaseUCMTarget extends AbstractTarget {
+public class ClearCaseUCMTarget extends AbstractTarget implements Describable<ClearCaseUCMTarget> {
 
     private String component;
     private String baselineName;
@@ -90,5 +94,31 @@ public class ClearCaseUCMTarget extends AbstractTarget {
         } else {
             return false;
         }
+    }
+
+    @Override
+    public Descriptor<ClearCaseUCMTarget> getDescriptor() {
+        return new DescriptorImpl();
+    }
+
+    @Extension
+    public static class DescriptorImpl extends Descriptor<ClearCaseUCMTarget> {
+        public DescriptorImpl() { }
+
+        @Override
+        public String getDisplayName() {
+            return "ClearCase UCM Configuration";
+        }
+
+        public ListBoxModel doFillLevelItems() {
+            ListBoxModel lbm = new ListBoxModel();
+            lbm.add("INITIAL", "INITIAL");
+            lbm.add("BUILT","BUILT");
+            lbm.add("TESTED","TESTED");
+            lbm.add("RELEASED","RELEASED");
+            lbm.add("REJECTED","REJECTED");
+            return lbm;
+        }
+
     }
 }

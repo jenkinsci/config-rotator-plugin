@@ -3,7 +3,7 @@
     <parent>
         <groupId>org.jenkins-ci.plugins</groupId>
         <artifactId>plugin</artifactId>
-        <version>1.532.3</version>
+        <version>2.11</version>
     </parent>
     <developers>
         <developer>
@@ -13,7 +13,7 @@
     </developers>
     <groupId>net.praqma</groupId>
     <artifactId>config-rotator</artifactId>
-    <version>1.3.2-SNAPSHOT</version>
+    <version>2.0.0-SNAPSHOT</version>
     <name>Config Rotator Plugin</name>
     <description>Automatic rotations of possible configurations. Monitors the SCM for newer versions of components and tests if compliant. Available for ClearCaseUCM and Git.
     </description>
@@ -25,6 +25,7 @@
         <powermock.version>1.4.12</powermock.version>
         <cool.version>0.6.42</cool.version>
         <praqmajutils.version>0.1.33</praqmajutils.version>
+        <jenkins.version>2.11</jenkins.version>
     </properties>
 
     <build>
@@ -61,7 +62,7 @@
         <!-- Needed for eg. the parent pom -->
         <repository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </repository>
 
         <!-- Praqma's own dependencies -->
@@ -80,7 +81,7 @@
     <pluginRepositories>
         <pluginRepository>
             <id>repo.jenkins-ci.org</id>
-            <url>http://repo.jenkins-ci.org/public/</url>
+            <url>https://repo.jenkins-ci.org/public/</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -365,13 +366,13 @@
                 <version>4.11</version>
                 <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>praqmajutils</artifactId>
             <version>${praqmajutils.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>net.praqma</groupId>
             <artifactId>praqmajutils</artifactId>
@@ -379,8 +380,8 @@
             <type>test-jar</type>
             <scope>test</scope>
         </dependency>
-        
-        <dependency>            
+
+        <dependency>
             <groupId>org.jenkins-ci.plugins</groupId>
             <artifactId>compatibility-action-storage</artifactId>
             <version>1.0</version>
@@ -419,7 +420,7 @@
             <version>${powermock.version}</version>
             <scope>test</scope>
         </dependency>
-        
+
         <dependency>
             <groupId>org.powermock</groupId>
             <artifactId>powermock-api-mockito</artifactId>

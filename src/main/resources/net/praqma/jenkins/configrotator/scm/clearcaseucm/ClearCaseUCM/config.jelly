@@ -5,46 +5,17 @@
 
         <f:entry title="Use newest" field="useNewest">
             <f:checkbox></f:checkbox>
-        </f:entry>        
+        </f:entry>
 
         <f:entry title="Contribute data globally" field="contribute">
             <f:checkbox></f:checkbox>
         </f:entry>
-	
+
 	<f:entry title="Context Project VOB">
 		<f:textbox name="cc.pvobName" value="${instance.pvobName}" help="/plugin/config-rotator/help/pvobname.html" />
 	</f:entry>
-    
-	<f:entry title="${%UCM configuration}">
-		<f:repeatable var="targets" varStatus="instStatus" items="${descriptor.getTargets(instance)}">
-			
-            <table width="50%">
-                <col width="100%"/>
 
-                <tbody>
-			 		<tr>
-                        <td align="left" style="min-width:200px">
-                            ${%Baseline}
-                        	<f:textbox name="cc.target.baselineName" value="${targets.baselineName}"/>                            
-                        </td>
-                        <td align="left" style="min-width:100px">
-                            ${%Promotion level}
-                            <select name="cc.target.level">
-                                <j:forEach var="availableLevel" items="${descriptor.getPromotionLevels()}">
-                                   <f:option selected="${targets.level.equals(availableLevel)}" value="${availableLevel}">${availableLevel}</f:option>
-                                </j:forEach>
-                            </select>
-                        </td>
-                        <td align="center">
-                            ${%Fixed}
-                            <f:checkbox name="cc.target.fixed" checked="${targets.fixed}"/>                    
-                        </td>
-                        <td style="vertical-align:middle">
-                            <f:repeatableDeleteButton/>
-                        </td>
-					</tr>
-				</tbody>
-			</table>
-		</f:repeatable>
-	</f:entry>   
+        <f:entry>
+            <f:repeatableProperty field="targets" add="Add component"/>
+        </f:entry>
 </j:jelly>

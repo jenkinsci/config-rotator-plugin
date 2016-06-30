@@ -1,0 +1,28 @@
+<j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
+    <tr>
+        <td>
+            Name <f:textbox field="name"/>
+        </td>
+        <td>
+            Branch
+            <f:textbox field="branch"/>
+        </td>
+        <td>
+            Repository
+            <f:textbox field="repository"/>
+        </td>
+        <td>
+            Commit
+            <f:textbox field="commitId"/>
+        </td>
+        <td>
+            <tr>
+                <td>
+                    Fixed
+                    <f:checkbox field="fixed"/>
+                </td>
+            </tr>
+        </td>
+    </tr>
+    <f:repeatableDeleteButton/>
+</j:jelly>
