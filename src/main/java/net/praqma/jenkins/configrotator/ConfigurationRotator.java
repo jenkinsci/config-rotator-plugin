@@ -58,7 +58,7 @@ public class ConfigurationRotator extends SCM {
     private static String VERSION = "Unresolved";
 
     static {
-        if( Jenkins.getInstance() != null ) {
+        if( Jenkins.getInstance() != null && Jenkins.getInstance().getPlugin( "config-rotator" ) != null) {
             FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
             VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
         }

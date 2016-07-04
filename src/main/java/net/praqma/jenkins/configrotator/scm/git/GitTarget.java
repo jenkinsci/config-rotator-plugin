@@ -80,12 +80,10 @@ public class GitTarget extends AbstractTarget implements Serializable, Describab
 
         if (other instanceof GitTarget) {
             GitTarget o = (GitTarget) other;
-
-            //return repository.equals( o.repository );
             return commitId.equals(o.commitId);
-        } else {
-            return false;
         }
+
+        return false;
     }
 
     @Override
@@ -103,6 +101,4 @@ public class GitTarget extends AbstractTarget implements Serializable, Describab
             return "Git configration";
         }
     }
-
-
 }

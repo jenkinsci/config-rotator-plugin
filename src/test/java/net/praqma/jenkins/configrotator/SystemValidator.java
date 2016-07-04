@@ -12,7 +12,8 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class SystemValidator<T extends AbstractTarget> {
@@ -92,14 +93,13 @@ public class SystemValidator<T extends AbstractTarget> {
             }
 
             if( this.checkTargets ) {
-                logger.info( "Targets must be " + this.targets );
-                logger.info( "Target size must be " + this.targets.size() );
-                for( int i = 0 ; i < this.targets.size() ; i++ ) {
-                    //TODO: Remove before release
-                    out.println( String.format(" * %s == %s", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i )))  );
-
-                    logger.info( String.format(" * %s == %s", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i )))  );
-                    assertThat( "Validating target", cr.getAcrs().getTargets().get( i ), is( this.targets.get( i ) ) );
+                logger.info("Targets must be " + this.targets);
+                logger.info("Target size must be " + this.targets.size());
+                for (int i = 0; i < this.targets.size(); i++) {
+                    AbstractTarget rotatorTarget = cr.getAcrs().getTargets().get(i);
+                    AbstractTarget expectedTarget = this.targets.get(i);
+                    logger.info(String.format(" * %s == %s", rotatorTarget, equalTo(expectedTarget)));
+                    assertThat("Validating target", rotatorTarget, equalTo(expectedTarget));
                 }
             }
 

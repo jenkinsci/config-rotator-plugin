@@ -21,9 +21,7 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.RuleChain;
 import org.junit.rules.TemporaryFolder;
-import org.junit.rules.TestRule;
 
 import java.io.File;
 import java.io.IOException;
@@ -124,6 +122,31 @@ public class GitTest {
 
         SystemValidator<ClearCaseUCMTarget> val3 = new SystemValidator<ClearCaseUCMTarget>( build3 );
         val3.checkExpectedResult( Result.NOT_BUILT ).validate();
+    }
+
+    @Test
+    public void basicTag() throws IOException, GitAPIException, InterruptedException {
+        git.initialize(folder.newFolder());
+        RevCommit commit1 = git.createCommit("text.txt", "1");
+        String tagName = "configRotator";
+        git.createTag(tagName);
+
+        ProjectBuilder builder = new ProjectBuilder(new Git(new ArrayList<GitTarget>())).setName("git-test-04");
+        ConfigRotatorProject project = builder.getProject();
+        project.addTarget(new GitTarget("test", git.getRepo(), "master", tagName, false));
+
+        AbstractBuild<?, ?> build = crRule.buildProject(project.getJenkinsProject(), false, null);
+
+        FilePath path = new FilePath(project.getJenkinsProject().getLastBuiltOn().getWorkspaceFor((FreeStyleProject) project.getJenkinsProject()), "test");
+        File filePath = new File(path.toURI());
+
+        SystemValidator<ClearCaseUCMTarget> val = new SystemValidator<ClearCaseUCMTarget>(build);
+        val.checkExpectedResult(Result.SUCCESS).
+                checkAction(true).
+                checkCompatability(true).
+                checkTargets(new GitTarget("test", git.getRepo(), "master", commit1.getName(), false)).
+                checkContent(new File(filePath, "text.txt"), "1").
+                validate();
     }
 
     //@Test

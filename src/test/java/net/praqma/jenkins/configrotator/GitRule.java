@@ -1,10 +1,9 @@
 package net.praqma.jenkins.configrotator;
 
-import hudson.FilePath;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.jgit.api.Git;
 import org.eclipse.jgit.api.errors.GitAPIException;
-import org.eclipse.jgit.api.errors.NoFilepatternException;
+import org.eclipse.jgit.lib.Ref;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.revwalk.RevCommit;
 import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
@@ -48,6 +47,10 @@ public class GitRule implements TestRule {
 
         git.add().addFilepattern( filename ).call();
         return git.commit().setMessage( ( create ? "Creating " : "Updating" ) + " " + filename ).setAll( true ).call();
+    }
+
+    public Ref createTag(String tagName) throws GitAPIException {
+        return git.tag().setName(tagName).call();
     }
 
     public String getRepo() {
