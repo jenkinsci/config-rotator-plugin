@@ -244,7 +244,11 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
     @Override
     public List<GitTarget> getTargets() {
-        return targets;
+        if( projectConfiguration != null ) {
+            return getConfigurationAsTargets( (GitConfiguration) projectConfiguration );
+        } else {
+            return targets;
+        }
     }
 
 
