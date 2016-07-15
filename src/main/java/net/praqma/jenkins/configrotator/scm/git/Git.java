@@ -172,7 +172,7 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
         RevCommit oldest = null;
         GitConfigurationComponent chosen = null;
-        GitConfiguration nconfig = (GitConfiguration) configuration.clone();
+        GitConfiguration nconfig = ((GitConfiguration) configuration).clone();
 
         /* Find oldest commit, newer than current */
         for( GitConfigurationComponent config : nconfig.getList() ) {

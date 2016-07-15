@@ -252,7 +252,7 @@ public class ClearCaseUCM extends AbstractConfigurationRotatorSCM implements Ser
 
         listener.getLogger().printf("%sUsing newsest baseline:%s%n", ConfigurationRotator.LOGGERNAME, isUseNewest());
 
-        ClearCaseUCMConfiguration nconfig = (ClearCaseUCMConfiguration) configuration.clone();
+        ClearCaseUCMConfiguration nconfig = ((ClearCaseUCMConfiguration) configuration).clone();
 
         List<Baseline> changes = new ArrayList<Baseline>();
 

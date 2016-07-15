@@ -54,8 +54,6 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
         return list;
     }
 
-    public abstract <T extends AbstractConfiguration> T clone();
-
     public abstract String toHtml();
 
     
