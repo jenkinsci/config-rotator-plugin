@@ -39,6 +39,12 @@ public class GitRule implements TestRule {
         git = new Git( gitRepo );
     }
 
+    public void cleanup() {
+        if(gitRepo != null)
+            for(int i = 0; i < 5; i++)
+                gitRepo.close(); // usage counter shenanigans
+    }
+
     public RevCommit createCommit( String filename, String content ) throws IOException, GitAPIException {
 
         File file = new File( gitPath, filename );
