@@ -22,7 +22,7 @@ public class ClearCaseUCMTarget extends AbstractTarget implements Describable<Cl
      * Warning: Only one databound constructor per component. Figured this out
      * the hard way.
      *
-     * @param component
+     * @param component the Component
      */
     public ClearCaseUCMTarget(String component) {
         this.component = component;
@@ -32,9 +32,9 @@ public class ClearCaseUCMTarget extends AbstractTarget implements Describable<Cl
      * New constructor. Builds a correct component string for backwards
      * compatability.
      *
-     * @param baselineName
-     * @param level
-     * @param fixed
+     * @param baselineName the name of the baseline
+     * @param level the baseline promotion level
+     * @param fixed fixed or not
      */
     @DataBoundConstructor
     public ClearCaseUCMTarget(String baselineName, Project.PromotionLevel level, boolean fixed) {

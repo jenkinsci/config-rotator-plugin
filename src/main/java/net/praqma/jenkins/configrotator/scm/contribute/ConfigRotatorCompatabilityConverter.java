@@ -9,10 +9,10 @@ import hudson.model.Action;
 import java.io.Serializable;
 
 /**
- * We follow the notion that each action in Jenkins should be able to tell us something about the compatability
+ * We follow the notion that each action in Jenkins should be able to tell us something about the compatibility
  * of a given configuration in a given context.
  * @author Mads
- * @param <T>
+ * @param <T> Action to convert
  */
 public interface ConfigRotatorCompatabilityConverter<T extends Action> extends Serializable {
     public CompatabilityCompatible convert(T t);

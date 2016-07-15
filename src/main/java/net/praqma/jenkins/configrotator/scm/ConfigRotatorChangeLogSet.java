@@ -48,7 +48,7 @@ public class ConfigRotatorChangeLogSet<T extends ConfigRotatorChangeLogEntry> ex
     
     /**
      * Adds the entry to the changelogset
-     * @param entry 
+     * @param entry The entry to add
      */
     public void add(T entry) {
         entries.add(entry);

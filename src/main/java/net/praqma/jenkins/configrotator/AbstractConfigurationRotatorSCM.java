@@ -69,7 +69,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
 
     /**
      *
-     * @param <C>
+     * @param <C> AbstractConfiguration
      */
     public class Poller<C extends AbstractConfiguration> {
 
