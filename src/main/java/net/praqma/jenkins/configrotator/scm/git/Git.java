@@ -63,13 +63,14 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
         @Override
         public GitConfiguration getInitialConfiguration() throws ConfigurationRotatorException {
-            return new GitConfiguration( getTargets(), workspace, listener );
+            List<GitTarget> initialTargets = projectConfiguration == null ? getTargets() : getConfigurationAsTargets( (GitConfiguration) projectConfiguration );
+            return new GitConfiguration(initialTargets, workspace, listener );
         }
 
         @Override
         public GitConfiguration getNextConfiguration( ConfigurationRotatorBuildAction action ) throws ConfigurationRotatorException {
-            GitConfiguration oldconfiguration = action.getConfiguration();
-            return (GitConfiguration) nextConfiguration(listener, oldconfiguration, workspace );
+            GitConfiguration oldConfiguration = action.getConfiguration();
+            return (GitConfiguration) nextConfiguration(listener, oldConfiguration, workspace );
         }
 
         @Override
@@ -244,11 +245,7 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
     @Override
     public List<GitTarget> getTargets() {
-        if( projectConfiguration != null ) {
-            return getConfigurationAsTargets( (GitConfiguration) projectConfiguration );
-        } else {
-            return targets;
-        }
+        return targets;
     }
 
 
