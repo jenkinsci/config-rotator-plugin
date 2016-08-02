@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define"
 	xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
  <l:layout title="Config Rotator">
@@ -21,7 +22,7 @@
                         <tr>
                             <td>${it.getVobName(folder)}</td>
                             <td>${it.getComponentName(file)}</td>
-                            <td><a href="${it.getFeedUrl(it.getVobName(folder),it.getComponentName(file))}">${it.getComponentName(file)}</a></td> 
+                            <td><a href="${it.getFeedUrl(it.getVobName(folder),it.getComponentName(file))}">${it.getComponentName(file)}</a></td>
                         </tr>
                     </j:forEach>
                 </j:forEach>

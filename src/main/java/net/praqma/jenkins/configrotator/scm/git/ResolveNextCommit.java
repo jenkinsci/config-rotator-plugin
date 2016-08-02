@@ -19,7 +19,7 @@ public class ResolveNextCommit implements FilePath.FileCallable<RevCommit> {
     private String commitId;
     private String name;
     private String branch = "git";
-
+    private static final Logger LOGGER = Logger.getLogger( ResolveNextCommit.class.getName() );
     public ResolveNextCommit( String name, String commitId ) {
         this.commitId = commitId;
         this.name = name;
@@ -28,55 +28,69 @@ public class ResolveNextCommit implements FilePath.FileCallable<RevCommit> {
     @Override
     public RevCommit invoke( File workspace, VirtualChannel virtualChannel ) throws IOException, InterruptedException {
 
-        Logger logger = Logger.getLogger( ResolveNextCommit.class.getName() );
-
-        File local = new File( workspace, name );
-        FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        logger.fine( "Initializing repo" );
-        Repository repo = builder.setGitDir( new File( local, ".git" ) ).readEnvironment().findGitDir().build();
-        org.eclipse.jgit.api.Git git = new org.eclipse.jgit.api.Git( repo );
-
-        logger.fine( "Updating to " + branch );
-
-        try {
-            logger.fine( "Pulling" );
-            git.pull().call();
-        } catch( GitAPIException e ) {
-            throw new IOException( e );
-        }
-
-        RevWalk w = new RevWalk( repo );
-
-        ObjectId ohead = repo.resolve( "HEAD" );
-        ObjectId ostart = repo.resolve( commitId );
-        RevCommit commithead = w.parseCommit( ohead );
-        RevCommit commit = w.parseCommit( ostart );
-
-        logger.fine( "Commit start: " + commitId );
-
-        w.markStart( commithead );
-
+        //Resources
+        Repository repo = null;
+        org.eclipse.jgit.api.Git git = null;
+        RevWalk w = null;
         RevCommit next = null;
 
-        for( RevCommit c : w ) {
-            if( c != null && c.equals(commit) ) {
-                break;
+        try {
+            File local = new File( workspace, name );
+            FileRepositoryBuilder builder = new FileRepositoryBuilder();
+            LOGGER.fine( "Initializing repo" );
+            repo = builder.setGitDir( new File( local, ".git" ) ).readEnvironment().findGitDir().build();
+            git = new org.eclipse.jgit.api.Git( repo );
+
+            LOGGER.fine( String.format( "Updating to %s", branch ) );
+            LOGGER.fine( "Pulling" );
+            git.pull().call();
+
+            w = new RevWalk( repo );
+
+            ObjectId ohead = repo.resolve( "HEAD" );
+            ObjectId ostart = repo.resolve( commitId );
+            RevCommit commithead = w.parseCommit( ohead );
+            RevCommit commit = w.parseCommit( ostart );
+
+            LOGGER.fine( String.format ("Commit start: %s", commitId ) );
+
+            w.markStart( commithead );
+
+
+            for( RevCommit c : w ) {
+                if( c != null && c.equals(commit) ) {
+                    break;
+                }
+
+                if( c == null ) {
+                    break;
+                }
+
+                if( c.getParentCount() > 1 ) {
+                    continue;
+                }
+
+                next = c;
+            }
+            LOGGER.fine( "Next is " + ( next == null ? "N/A" : next.getName() ) );
+        } catch (GitAPIException ex) {
+            throw new IOException(ex);
+        } catch (IOException iox) {
+            throw iox;
+        } finally {
+            if(repo != null) {
+                repo.close();
+            }
+            if(w != null) {
+                w.close();
+                w.dispose();
             }
 
-            if( c == null ) {
-                break;
+            if(git != null) {
+                git.close();
             }
-
-            if( c.getParentCount() > 1 ) {
-                continue;
-            }
-
-            next = c;
         }
 
-        w.dispose();
-
-        logger.fine( "Next is " + ( next == null ? "N/A" : next.getName() ) );
 
         return next;
     }

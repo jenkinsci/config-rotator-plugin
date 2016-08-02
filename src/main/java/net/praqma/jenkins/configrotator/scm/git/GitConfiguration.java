@@ -20,7 +20,7 @@ public class GitConfiguration extends AbstractConfiguration<GitConfigurationComp
         for( AbstractTarget t : targets ) {
             GitTarget target = (GitTarget)t;
 
-            LOGGER.fine("Getting component for " + target);
+            LOGGER.fine( String.format( "Getting component for %s", target ) );
             GitConfigurationComponent c = null;
             try {
                 c = workspace.act( new ResolveConfigurationComponent( listener, target.getName(), target.getRepository(), target.getBranch(), target.getCommitId(), target.getFixed() ) );
@@ -30,7 +30,7 @@ public class GitConfiguration extends AbstractConfiguration<GitConfigurationComp
                 throw new ConfigurationRotatorException( "Unable to get component for " + target, e );
             }
 
-            LOGGER.fine("Adding " + c);
+            LOGGER.fine( String.format( "Adding %s", c ) );
             list.add( c );
         }
     }

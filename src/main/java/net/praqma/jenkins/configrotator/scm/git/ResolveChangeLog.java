@@ -23,6 +23,7 @@ import org.jenkinsci.remoting.RoleChecker;
 
 public class ResolveChangeLog implements FilePath.FileCallable<ConfigRotatorChangeLogEntry> {
 
+    private static final Logger LOGGER = Logger.getLogger( ResolveChangeLog.class.getName() );
     private String commitId;
     private String name;
 
@@ -34,27 +35,44 @@ public class ResolveChangeLog implements FilePath.FileCallable<ConfigRotatorChan
     @Override
     public ConfigRotatorChangeLogEntry invoke( File workspace, VirtualChannel virtualChannel ) throws IOException, InterruptedException {
 
-        Logger logger = Logger.getLogger( ResolveChangeLog.class.getName() );
-
         File local = new File( workspace, name );
         FileRepositoryBuilder builder = new FileRepositoryBuilder();
-        Repository repo = builder.setGitDir( new File( local, ".git" ) ).readEnvironment().findGitDir().build();
+        List<DiffEntry> diffs = new ArrayList<DiffEntry>();
 
-        RevWalk w = new RevWalk( repo );
+        //Resources that NEEDS to be closed
+        Repository repo = null;
+        RevWalk w = null;
 
-        ObjectId o = repo.resolve( commitId );
-        RevCommit commit = w.parseCommit( o );
+        //References
+        RevCommit commit = null;
+        RevCommit parent = null;
 
-        RevCommit parent = w.parseCommit( commit.getParent( 0 ).getId() );
+        try {
+            repo = builder.setGitDir( new File( local, ".git" ) ).readEnvironment().findGitDir().build();
+            w = new RevWalk( repo );
+            ObjectId o = repo.resolve( commitId );
+            commit = w.parseCommit( o );
+            parent = w.parseCommit( commit.getParent( 0 ).getId() );
+            LOGGER.fine(String.format("Diffing %s -> %s", commit.getName(), parent.getName() ) );
+            DiffFormatter df = new DiffFormatter( DisabledOutputStream.INSTANCE );
+            df.setRepository( repo );
+            df.setDiffComparator( RawTextComparator.DEFAULT );
+            df.setDetectRenames( true );
+            diffs = df.scan( parent.getTree(), commit.getTree() );
+        } catch (IOException io) {
+            throw io;
+        } finally {
+            if(repo != null) {
+                repo.close();
+            }
+            if(w != null) {
+                w.close();
+            }
+            if(repo != null) {
+                repo.close();
+            }
+        }
 
-        logger.fine("Diffing " + commit.getName() + " -> " + parent.getName() );
-
-        DiffFormatter df = new DiffFormatter( DisabledOutputStream.INSTANCE );
-        df.setRepository( repo );
-        df.setDiffComparator( RawTextComparator.DEFAULT );
-        df.setDetectRenames( true );
-
-        List<DiffEntry> diffs = df.scan( parent.getTree(), commit.getTree() );
         ConfigRotatorChangeLogEntry entry = new ConfigRotatorChangeLogEntry( commit.getFullMessage(), commit.getAuthorIdent().getName(), new ArrayList<ConfigRotatorVersion>());
         for( DiffEntry diff : diffs ) {
             entry.addVersion( new ConfigRotatorVersion( diff.getNewPath(), "", commit.getAuthorIdent().getName() ) );

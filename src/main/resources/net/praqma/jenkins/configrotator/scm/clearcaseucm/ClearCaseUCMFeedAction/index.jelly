@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core"
          xmlns:l="/lib/layout">
     <l:layout title="Config Rotator" css="/plugin/config-rotator/css/style.css" norefresh="true">

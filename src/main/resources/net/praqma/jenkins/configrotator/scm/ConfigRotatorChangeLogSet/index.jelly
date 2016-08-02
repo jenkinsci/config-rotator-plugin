@@ -1,3 +1,4 @@
+<?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core">
       <j:choose>
         <j:when test="${it.emptySet}">
@@ -37,5 +38,5 @@
                 </j:forEach>
             </table>
         </j:otherwise>
-    </j:choose>  
+    </j:choose>
 </j:jelly>

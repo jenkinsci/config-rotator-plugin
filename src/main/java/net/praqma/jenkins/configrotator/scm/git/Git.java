@@ -28,7 +28,7 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
     private static final Logger LOGGER = Logger.getLogger( Git.class.getName() );
 
-    private List<GitTarget> targets = new ArrayList<GitTarget>();
+    private List<GitTarget> targets = new ArrayList<>();
 
     @DataBoundConstructor
     public Git(List<GitTarget> targets) {

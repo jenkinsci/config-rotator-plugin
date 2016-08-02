@@ -94,9 +94,6 @@ public class GitConfigurationComponent extends AbstractConfigurationComponent {
 
         if( other instanceof GitConfigurationComponent ) {
             GitConfigurationComponent o = (GitConfigurationComponent) other;
-
-            logger.finest( "Other: " + o.commitId + " == " + commitId );
-
             return ( o.commitId.equals( commitId ) && ( o.isFixed() == fixed ) );
         } else {
             return false;

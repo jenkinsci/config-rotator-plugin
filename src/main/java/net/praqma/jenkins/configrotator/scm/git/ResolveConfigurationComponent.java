@@ -16,7 +16,10 @@ import org.eclipse.jgit.storage.file.FileRepositoryBuilder;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.lang.StringUtils;
+import org.eclipse.jgit.api.errors.RefAlreadyExistsException;
 import org.jenkinsci.remoting.RoleChecker;
 
 /**
@@ -29,6 +32,7 @@ public class ResolveConfigurationComponent implements FilePath.FileCallable<GitC
     private String branch;
     private String commitId;
     private boolean fixed;
+    private static final Logger LOGGER = Logger.getLogger( ResolveConfigurationComponent.class.getName() );
 
     private TaskListener listener;
 
@@ -42,12 +46,9 @@ public class ResolveConfigurationComponent implements FilePath.FileCallable<GitC
         this.listener = listener;
     }
 
-    @Override
-    public GitConfigurationComponent invoke( File workspace, VirtualChannel channel ) throws IOException, InterruptedException {
-        Logger logger = Logger.getLogger( ResolveConfigurationComponent.class.getName() );
-
+    private void fixName() {
         /* fixing name */
-        if( name == null || name.equals( "" ) ) {
+        if( StringUtils.isBlank(name) ) {
             name = repository.substring( repository.lastIndexOf( "/" ) );
 
             if( name.matches( ".*?\\.git$" ) ) {
@@ -58,64 +59,105 @@ public class ResolveConfigurationComponent implements FilePath.FileCallable<GitC
                 name = name.substring( 1 );
             }
         }
+    }
 
-        logger.fine( "Name: " + name );
-
-        /* Fixing branch */
-        if( branch == null || branch.equals( "" ) ) {
-            branch = "master";
-        }
-
+    private File safeClone(File workspace) throws IOException {
         File local = new File( workspace, name );
-
+        LOGGER.fine( String.format("Cloning repo from %s", repository) );
+        org.eclipse.jgit.api.Git g = null;
         try {
-            logger.fine( "Cloning repo from " + repository );
-
-            try {
-                org.eclipse.jgit.api.Git.cloneRepository().setURI( repository ).setDirectory( local ).setCloneAllBranches( true ).call();
-            } catch( JGitInternalException e ) {
-                logger.warning( e.getMessage() );
+            g = org.eclipse.jgit.api.Git.cloneRepository().setURI( repository ).setDirectory( local ).setCloneAllBranches( true ).call();
+        } catch( JGitInternalException e ) {
+            if(e.getMessage().contains("already exists and is not an empty directory")) {
+                LOGGER.info("Ignoring this error...repo already exists");
+            } else {
+                LOGGER.log(Level.SEVERE, "The error message is not the one we expected. This one should be thrown", e);
+                throw new IOException(e);
             }
 
-            FileRepositoryBuilder builder = new FileRepositoryBuilder();
-            Repository repo = builder.setGitDir( new File( local, ".git" ) ).readEnvironment().findGitDir().build();
-            org.eclipse.jgit.api.Git git = new org.eclipse.jgit.api.Git( repo );
+        } catch (GitAPIException ex) {
+            LOGGER.log(Level.SEVERE, String.format("Failed to clone repo %s", local) , ex);
+            throw new IOException(String.format("Failed to clone repo %s", local), ex);
+        } finally {
+            if (g != null) {
+                if(g.getRepository() != null) {
+                    g.getRepository().close();
+                }
+                g.close();
+            }
+        }
+        return local;
+    }
 
+    private RevCommit createBranchAndPull(File localClone) throws IOException {
+        //Init repository
+        RevCommit commit;
+        Repository repo = null;
+        org.eclipse.jgit.api.Git git = null;
+        RevWalk w = null;
+        FileRepositoryBuilder builder = new FileRepositoryBuilder();
+        try {
+            repo = builder.setGitDir( new File( localClone, ".git" ) ).readEnvironment().findGitDir().build();
+            git = new org.eclipse.jgit.api.Git( repo );
             try {
-                logger.fine( "Creating branch " + branch );
+                LOGGER.fine( String.format( "Creating branch %s",  branch ) );
                 git.branchCreate().setUpstreamMode( CreateBranchCommand.SetupUpstreamMode.SET_UPSTREAM ).setName( branch ).setStartPoint( "origin/" + branch ).call();
-            } catch( Exception e ) {
-                logger.fine( e.getMessage() );
-                /* Keep on trucking! */
+            } catch (RefAlreadyExistsException ignore) {
+                //This needs to be ignored.
             }
 
-            try {
-                logger.fine( "Pulling" );
-                git.pull().call();
-            } catch( GitAPIException e ) {
-                throw new IOException( e );
-            }
+            git.pull().call();
 
-            RevWalk w = new RevWalk( repo );
+            w = new RevWalk( repo );
 
-            logger.fine( "The commit id: " + commitId );
+            LOGGER.fine( String.format( "The commit id: %s", commitId ) );
 
             if( commitId == null || commitId.matches( "^\\s*$" ) ) {
-                logger.fine( "Initial commit not defined, using HEAD" );
+                LOGGER.fine( "Initial commit not defined, using HEAD" );
                 listener.getLogger().println( ConfigurationRotator.LOGGERNAME + "Initial commit not defined, using HEAD" );
                 commitId = "HEAD";
             }
 
-            logger.fine( "Getting commit \"" + commitId + "\"" );
+            LOGGER.fine( String.format("Getting commit '%s'", commitId ) );
             ObjectId o = repo.resolve( commitId );
-            RevCommit commit = w.parseCommit( o );
-            logger.fine( "RevCommit: " + commit );
+            commit = w.parseCommit( o );
+            LOGGER.fine( String.format( "RevCommit: %s", commit ) );
+        } catch (IOException io) {
+            throw io;
+        } catch (GitAPIException ex) {
+            throw new IOException(ex);
+        } finally {
 
-            return new GitConfigurationComponent( name, repository, branch, commit, fixed );
-
-        } catch( GitAPIException e ) {
-            throw new IOException( e );
+            if(repo != null) {
+                repo.close();
+            }
+            if(w != null) {
+                w.close();
+                w.dispose();
+            }
+            if(git != null) {
+                git.close();
+            }
         }
+        return commit;
+    }
+
+    @Override
+    public GitConfigurationComponent invoke( File workspace, VirtualChannel channel ) throws IOException, InterruptedException {
+        fixName();
+        LOGGER.fine(String.format("Name: %s", name));
+
+        /* Fixing branch */
+        if( StringUtils.isBlank(branch) ) {
+            branch = "master";
+        }
+
+        File local = safeClone(workspace);
+        RevCommit commit = createBranchAndPull(local);
+
+
+        return new GitConfigurationComponent( name, repository, branch, commit, fixed );
+
     }
 
     private void listPath( PrintStream logger, File path ) {
