@@ -35,7 +35,7 @@ public class ConfigurationRotator extends SCM {
      */
     private boolean printDebug = false;
 
-    private static final Logger logger = Logger.getLogger( ConfigurationRotator.class.getName() );
+    private static final Logger LOGGER = Logger.getLogger( ConfigurationRotator.class.getName() );
 
     public enum ResultType {
         COMPATIBLE,
@@ -56,7 +56,7 @@ public class ConfigurationRotator extends SCM {
     private static String VERSION = "Unresolved";
 
     static {
-        if( Jenkins.getInstance() != null && Jenkins.getInstance().getPlugin( "config-rotator" ) != null) {
+        if( Jenkins.getInstance().getPlugin( "config-rotator" ) != null) {
             FEED_PATH = new File( Jenkins.getInstance().getRootDir(), FEED_DIR );
             VERSION = Jenkins.getInstance().getPlugin( "config-rotator" ).getWrapper().getVersion();
         }
@@ -104,14 +104,14 @@ public class ConfigurationRotator extends SCM {
     public boolean checkout( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener, File file ) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
         out.println( LOGGERNAME + "Version: " + VERSION );
-        logger.fine( "Version: " + VERSION );
+        LOGGER.fine( "Version: " + VERSION );
 
         /*
            * Determine if the job was reconfigured
            */
         if( justConfigured ) {
             reconfigure = acrs.wasReconfigured( build.getProject() );
-            logger.fine( "Was reconfigured: " + reconfigure );
+            LOGGER.fine( "Was reconfigured: " + reconfigure );
         }
 
         AbstractConfigurationRotatorSCM.Performer<AbstractConfiguration<?>> performer = acrs.getPerform( build, launcher, workspace, listener );
@@ -143,7 +143,7 @@ public class ConfigurationRotator extends SCM {
 
             }
         } catch( Exception e ) {
-            logger.log( Level.SEVERE, "Unable to create configuration", e );
+            LOGGER.log( Level.SEVERE, "Unable to create configuration", e );
             DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die, acrs.getTargets() );
             build.addAction( da );
             throw new AbortException( e.getMessage() );
@@ -172,12 +172,12 @@ public class ConfigurationRotator extends SCM {
                     }
                     clw.write( entries );
                 } else {
-                    logger.info( "Change log writer not implemented" );
+                    LOGGER.info( "Change log writer not implemented" );
                 }
 
             } catch( Exception e ) {
                 /* The build must not be terminated because of the change log */
-                logger.log( Level.WARNING, "Change log not generated", e );
+                LOGGER.log( Level.WARNING, "Change log not generated", e );
                 out.println( LOGGERNAME + "Change log not generated" );
             }
 
@@ -196,7 +196,7 @@ public class ConfigurationRotator extends SCM {
     public void ensurePublisher( AbstractBuild build ) throws IOException {
         Describable describable = build.getProject().getPublishersList().get( ConfigurationRotatorPublisher.class );
         if( describable == null ) {
-            logger.info( "Adding publisher to project" );
+            LOGGER.info( "Adding publisher to project" );
             build.getProject().getPublishersList().add( new ConfigurationRotatorPublisher() );
         }
     }
@@ -209,7 +209,7 @@ public class ConfigurationRotator extends SCM {
     @Override
     protected PollingResult compareRemoteRevisionWith( AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, SCMRevisionState arg4 ) throws IOException, InterruptedException {
         PrintStream out = listener.getLogger();
-        logger.fine( VERSION );
+        LOGGER.fine( VERSION );
         // This little check ensures changes are not found while building, as
         // this with many concurrent builds and polling leads to issues where
         // we saw a build was long in the queue, and when started, the polling found
@@ -218,7 +218,7 @@ public class ConfigurationRotator extends SCM {
         // Basically this disables polling while the job has a build in the queue.
         if( project.isInQueue() ) {
             out.println( "A build already in queue - cancelling poll" );
-            logger.fine( "A build already in queue - cancelling poll" );
+            LOGGER.fine( "A build already in queue - cancelling poll" );
             return PollingResult.NO_CHANGES;
         }
 
@@ -227,7 +227,7 @@ public class ConfigurationRotator extends SCM {
            */
         if( justConfigured ) {
             reconfigure = acrs.wasReconfigured( project );
-            logger.fine( "Was reconfigured: " + reconfigure );
+            LOGGER.fine( "Was reconfigured: " + reconfigure );
         }
 
         AbstractConfigurationRotatorSCM.Poller poller = acrs.getPoller(project, launcher, workspace, listener );
@@ -237,27 +237,27 @@ public class ConfigurationRotator extends SCM {
 
         try {
             if( reconfigure ) {
-                logger.fine( "Reconfigured, build now!" );
+                LOGGER.fine( "Reconfigured, build now!" );
 
                 out.println( LOGGERNAME + "Configuration from scratch, build now!" );
                 return PollingResult.BUILD_NOW;
             } else if( lastAction == null)  {
                 if(dieaction != null && dieaction.died()) {
-                    logger.fine( "Do actual polling" );
+                    LOGGER.fine( "Do actual polling" );
                     out.println( LOGGERNAME + "Error in configuration...do not start build" );
                     return PollingResult.NO_CHANGES;
                 } else {
-                    logger.fine( "Do actual polling" );
+                    LOGGER.fine( "Do actual polling" );
                     out.println( LOGGERNAME + "Getting next configuration" );
                     return poller.poll( lastAction );
                 }
             } else {
-                logger.fine( "Do actual polling" );
+                LOGGER.fine( "Do actual polling" );
                 out.println( LOGGERNAME + "Getting next configuration" );
                 return poller.poll( lastAction );
             }
         } catch( Exception e ) {
-            logger.log( Level.SEVERE, "Unable to poll", e );
+            LOGGER.log( Level.SEVERE, "Unable to poll", e );
             throw new AbortException( e.getMessage() );
         }
     }
@@ -287,6 +287,6 @@ public class ConfigurationRotator extends SCM {
         public List<ConfigurationRotatorSCMDescriptor<?>> getSCMs() {
             return AbstractConfigurationRotatorSCM.getDescriptors();
         }
-        
+
     }
 }

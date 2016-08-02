@@ -1,14 +1,13 @@
 package net.praqma.jenkins.configrotator.scm.clearcaseucm;
 
 import hudson.Extension;
-import hudson.model.Describable;
 import hudson.model.Descriptor;
 import hudson.util.ListBoxModel;
 import net.praqma.clearcase.ucm.entities.Project;
 import net.praqma.jenkins.configrotator.AbstractTarget;
 import org.kohsuke.stapler.DataBoundConstructor;
 
-public class ClearCaseUCMTarget extends AbstractTarget implements Describable<ClearCaseUCMTarget> {
+public class ClearCaseUCMTarget extends AbstractTarget<ClearCaseUCMTarget> {
 
     private String component;
     private String baselineName;

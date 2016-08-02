@@ -6,11 +6,8 @@ import net.praqma.jenkins.configrotator.AbstractConfigurationComponent;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
-import java.util.logging.Logger;
 
 public class GitConfigurationComponent extends AbstractConfigurationComponent {
-
-    private static Logger logger = Logger.getLogger( GitConfigurationComponent.class.getName() );
 
     private transient RevCommit commit;
     private String commitId;

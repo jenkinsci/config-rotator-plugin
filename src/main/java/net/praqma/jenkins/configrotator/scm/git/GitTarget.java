@@ -1,14 +1,14 @@
 package net.praqma.jenkins.configrotator.scm.git;
 
 import hudson.Extension;
-import hudson.model.Describable;
 import hudson.model.Descriptor;
 import net.praqma.jenkins.configrotator.AbstractTarget;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
+import jenkins.model.Jenkins;
 
-public class GitTarget extends AbstractTarget implements Serializable, Describable<GitTarget> {
+public class GitTarget extends AbstractTarget<GitTarget> implements Serializable {
 
     private String name;
     private String repository;
@@ -88,7 +88,7 @@ public class GitTarget extends AbstractTarget implements Serializable, Describab
 
     @Override
     public Descriptor<GitTarget> getDescriptor() {
-        return new DescriptorImpl();
+        return (Descriptor<GitTarget>)Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
     @Extension
@@ -100,5 +100,7 @@ public class GitTarget extends AbstractTarget implements Serializable, Describab
         public String getDisplayName() {
             return "Git configration";
         }
+
     }
+
 }

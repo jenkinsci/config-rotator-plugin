@@ -10,7 +10,6 @@ import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
 import hudson.model.Describable;
 import hudson.model.TaskListener;
-import hudson.model.Descriptor;
 import hudson.scm.PollingResult;
 
 import java.util.logging.Level;
@@ -281,7 +280,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     }
 
     @Override
-    public Descriptor<AbstractConfigurationRotatorSCM> getDescriptor() {
+    public ConfigurationRotatorSCMDescriptor getDescriptor() {
         return (ConfigurationRotatorSCMDescriptor) Jenkins.getInstance().getDescriptorOrDie(getClass());
     }
 
