@@ -9,10 +9,8 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
-import net.sf.json.JSONObject;
 
 import org.kohsuke.stapler.DataBoundConstructor;
-import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.AbortException;
 import hudson.Extension;
@@ -205,7 +203,7 @@ public class ConfigurationRotator extends SCM {
 
     public void setConfigurationByAction( AbstractProject<?, ?> project, ConfigurationRotatorBuildAction action ) throws IOException {
         acrs.setConfigurationByAction( project, action );
-        reconfigure = true;
+        justConfigured = true;
     }
 
     @Override
@@ -286,17 +284,9 @@ public class ConfigurationRotator extends SCM {
             return "Config rotator";
         }
 
-        @Override
-        public SCM newInstance( StaplerRequest req, JSONObject formData ) throws FormException {
-            ConfigurationRotator r = (ConfigurationRotator) super.newInstance( req, formData );
-            ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM> d = (ConfigurationRotatorSCMDescriptor<AbstractConfigurationRotatorSCM>) r.getAcrs().getDescriptor();
-            r.acrs = d.newInstance( req, formData, r.acrs );
-            save();
-            return r;
-        }
-
         public List<ConfigurationRotatorSCMDescriptor<?>> getSCMs() {
             return AbstractConfigurationRotatorSCM.getDescriptors();
         }
+        
     }
 }
