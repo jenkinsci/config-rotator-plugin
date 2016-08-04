@@ -1,9 +1,8 @@
 package net.praqma.jenkins.configrotator;
 
 import hudson.model.Describable;
-import hudson.model.Descriptor;
-import jenkins.model.Jenkins;
+import java.io.Serializable;
 
-public abstract class AbstractTarget<T extends Describable<T>> implements Describable<T> {
+public abstract class AbstractTarget<T extends Describable<T>> implements Describable<T>, Serializable {
 
 }

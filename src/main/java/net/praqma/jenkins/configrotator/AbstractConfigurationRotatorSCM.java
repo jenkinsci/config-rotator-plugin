@@ -49,7 +49,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
 
     public abstract AbstractConfiguration nextConfiguration(TaskListener listener, AbstractConfiguration configuration, FilePath workspace) throws ConfigurationRotatorException;
 
-    public abstract AbstractConfigurationRotatorSCM.Poller getPoller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener);
+    public abstract AbstractConfigurationRotatorSCM.Poller getPoller(AbstractProject<?, ?> project, FilePath workspace, TaskListener listener);
 
     /**
      * @return the useNewest
@@ -73,21 +73,18 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     public class Poller<C extends AbstractConfiguration> {
 
         protected AbstractProject<?, ?> project;
-        protected Launcher launcher;
         protected FilePath workspace;
         protected TaskListener listener;
         protected boolean canPollWhileBuilding = true;
 
-        public Poller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener) {
+        public Poller(AbstractProject<?, ?> project, FilePath workspace, TaskListener listener) {
             this.project = project;
-            this.launcher = launcher;
             this.workspace = workspace;
             this.listener = listener;
         }
 
-        public Poller(AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener, boolean canPollWhileBuilding) {
+        public Poller(AbstractProject<?, ?> project, FilePath workspace, TaskListener listener, boolean canPollWhileBuilding) {
             this.project = project;
-            this.launcher = launcher;
             this.workspace = workspace;
             this.listener = listener;
             this.canPollWhileBuilding = canPollWhileBuilding;
@@ -134,28 +131,24 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
      * Perform the actual config rotation
      *
      * @param build  the current build
-     * @param launcher  the launcher
      * @param workspace  the workspace
      * @param listener  the listener
      * @return A performer for the configured rotator
      * @throws IOException when an error occurs
      */
-    public abstract AbstractConfigurationRotatorSCM.Performer getPerform(AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener) throws IOException;
+    public abstract AbstractConfigurationRotatorSCM.Performer getPerform(AbstractBuild<?, ?> build, FilePath workspace, BuildListener listener) throws IOException;
 
     public abstract class Performer<C> {
 
         protected AbstractBuild<?, ?> build;
-        protected Launcher launcher;
         protected FilePath workspace;
         protected BuildListener listener;
         protected PrintStream out;
 
-        public Performer(AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener) {
+        public Performer(AbstractBuild<?, ?> build, FilePath workspace, BuildListener listener) {
             this.build = build;
-            this.launcher = launcher;
             this.workspace = workspace;
             this.listener = listener;
-
             this.out = listener.getLogger();
         }
 
@@ -180,9 +173,9 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
         }
     }
 
-    public abstract void setConfigurationByAction(AbstractProject<?, ?> project, ConfigurationRotatorBuildAction action) throws IOException;
+    public abstract AbstractConfiguration setConfigurationByAction(AbstractProject<?, ?> project, ConfigurationRotatorBuildAction action) throws IOException;
 
-    public abstract boolean wasReconfigured(AbstractProject<?, ?> project);
+    public abstract boolean wasReconfigured(AbstractProject<?, ?> project, TaskListener listener);
 
     public abstract ConfigRotatorChangeLogParser createChangeLogParser();
 
@@ -247,7 +240,7 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
         public void write(List<ConfigRotatorChangeLogEntry> entries) {
             PrintWriter writer = null;
             try {
-                writer = new PrintWriter(new FileWriter(changeLogFile));
+                writer = new PrintWriter(changeLogFile, "utf-8");
                 writer.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
                 writer.println("<changelog>");
 
@@ -311,7 +304,12 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
     }
 
     public DiedBecauseAction getLastDieAction(AbstractProject<?, ?> project) {
-        return project.getLastBuild() != null ? project.getLastBuild().getAction(DiedBecauseAction.class) : null;
+        AbstractBuild<?, ?> ab = project.getLastBuild();
+        if(ab == null) {
+            return null;
+        } else {
+            return ab.getAction(DiedBecauseAction.class);
+        }
     }
 
     public ConfigurationRotatorBuildAction getPreviousResult(AbstractBuild<?, ?> build, Class<? extends AbstractConfigurationRotatorSCM> clazz) {

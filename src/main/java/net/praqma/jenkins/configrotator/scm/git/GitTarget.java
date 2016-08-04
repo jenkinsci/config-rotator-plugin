@@ -6,6 +6,7 @@ import net.praqma.jenkins.configrotator.AbstractTarget;
 import org.kohsuke.stapler.DataBoundConstructor;
 
 import java.io.Serializable;
+import java.util.Objects;
 import jenkins.model.Jenkins;
 
 public class GitTarget extends AbstractTarget<GitTarget> implements Serializable {
@@ -70,6 +71,11 @@ public class GitTarget extends AbstractTarget<GitTarget> implements Serializable
     @Override
     public String toString() {
         return String.format("%s, %s", repository, branch);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(commitId, branch);
     }
 
     @Override

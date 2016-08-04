@@ -6,10 +6,11 @@ import net.praqma.jenkins.configrotator.AbstractConfigurationComponent;
 import org.eclipse.jgit.revwalk.RevCommit;
 
 import java.io.IOException;
+import java.util.Objects;
 
-public class GitConfigurationComponent extends AbstractConfigurationComponent {
+public class GitConfigurationComponent extends AbstractConfigurationComponent implements Cloneable {
 
-    private transient RevCommit commit;
+    public static final long serialVersionUID = 101;
     private String commitId;
     private String name;
     private String branch;
@@ -25,7 +26,6 @@ public class GitConfigurationComponent extends AbstractConfigurationComponent {
 
     public GitConfigurationComponent( String name, String repository, String branch, RevCommit commit, boolean fixed ) {
         super( fixed );
-        this.commit = commit;
         if( commit != null ) {
             this.commitId = commit.getName();
         }
@@ -50,10 +50,6 @@ public class GitConfigurationComponent extends AbstractConfigurationComponent {
         return name;
     }
 
-    public RevCommit getCommit() {
-        return commit;
-    }
-
     public void setCommitId( String commitId ) {
         this.commitId = commitId;
     }
@@ -68,8 +64,13 @@ public class GitConfigurationComponent extends AbstractConfigurationComponent {
     }
 
     @Override
-    protected Object clone() {
-        GitConfigurationComponent gcc = new GitConfigurationComponent( name, repository, branch, commitId, fixed );
+    protected Object clone() throws CloneNotSupportedException {
+        GitConfigurationComponent gcc = (GitConfigurationComponent)super.clone();
+        gcc.name = this.name;
+        gcc.repository = this.repository;
+        gcc.branch = this.branch;
+        gcc.commitId = this.commitId;
+        gcc.fixed = this.fixed;
         return  gcc;
     }
 
@@ -81,6 +82,11 @@ public class GitConfigurationComponent extends AbstractConfigurationComponent {
     @Override
     public String getFeedName() {
         return repository;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(commitId, name, repository);
     }
 
     @Override

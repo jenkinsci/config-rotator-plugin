@@ -4,11 +4,19 @@ import net.praqma.jenkins.configrotator.scm.ConfigRotatorChangeLogEntry;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public abstract class AbstractConfiguration<T extends AbstractConfigurationComponent> implements Serializable {
     public abstract List<ConfigRotatorChangeLogEntry> difference( T component, T other ) throws ConfigurationRotatorException;
 
-    protected List<T> list = new ArrayList<T>();
+    protected List<T> list = new ArrayList<>();
+
+    public AbstractConfiguration() {
+    }
+
+    public AbstractConfiguration(List<T> list) {
+        this.list = list;
+    }
 
     protected String description = null;
 
@@ -38,7 +46,7 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
         for( AbstractConfigurationComponent configuration : l ) {
             if( configuration.isChangedLast() ) {
                 int i = l.indexOf( configuration );
-                indicies.add(i);                
+                indicies.add(i);
             }
         }
 
@@ -56,7 +64,7 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
 
     public abstract String toHtml();
 
-    
+
     public String getDescription( ConfigurationRotatorBuildAction action ) {
         if( description == null ) {
             ConfigurationRotator rotator = (ConfigurationRotator) action.getBuild().getProject().getScm();
@@ -66,20 +74,20 @@ public abstract class AbstractConfiguration<T extends AbstractConfigurationCompo
                 ConfigurationRotatorBuildAction previous = rotator.getAcrs().getPreviousResult( action.getBuild(), null );
                 List<Integer> changes = getChangedComponentIndecies();
                 List<AbstractConfigurationComponent> changedComps = getChangedComponents();
-                
+
                 StringBuilder builder = new StringBuilder();
                 for(Integer i : changes) {
                    String c = String.format( "%s<br/>%s%n", ((T)previous.getConfigurationWithOutCast().getList().get( i) ).prettyPrint(), changedComps.get(i).prettyPrint() );
                    builder.append(c);
                 }
-                
+
                 return builder.toString();
             }
         }
 
         return description;
     }
-    
+
 
     public String basicHtml( StringBuilder builder, String ... titles ) {
 

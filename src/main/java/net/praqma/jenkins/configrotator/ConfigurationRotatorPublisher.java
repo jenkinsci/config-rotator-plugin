@@ -12,6 +12,7 @@ import net.sf.json.JSONObject;
 import org.kohsuke.stapler.StaplerRequest;
 
 import hudson.Extension;
+import hudson.FilePath;
 import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
@@ -33,7 +34,7 @@ import org.jenkinsci.plugins.compatibilityaction.CompatibilityDataPlugin;
 
 public class ConfigurationRotatorPublisher extends Notifier {
 
-    private static final Logger logger = Logger.getLogger(ConfigurationRotatorPublisher.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ConfigurationRotatorPublisher.class.getName());
 
     public ConfigurationRotatorPublisher() {
     }
@@ -52,27 +53,34 @@ public class ConfigurationRotatorPublisher extends Notifier {
             ConfigurationRotator scmConverted = (ConfigurationRotator)build.getProject().getScm();
             ConfigurationRotatorBuildAction action = build.getAction(ConfigurationRotatorBuildAction.class);
             if (action != null) {
-
-                if (build.getResult().isBetterOrEqualTo(Result.SUCCESS)) {
-                    action.setResult(ResultType.COMPATIBLE);
-                } else {
-                    action.setResult(ResultType.INCOMPATIBLE);
+                Result br = build.getResult();
+                if(br != null) {
+                    if (br.isBetterOrEqualTo(Result.SUCCESS)) {
+                        action.setResult(ResultType.COMPATIBLE);
+                    } else {
+                        action.setResult(ResultType.INCOMPATIBLE);
+                    }
                 }
-
                 /**
                  * If the database is installed try to store information
                  */
                 if(Jenkins.getInstance().getPlugin("compatibility-action-storage") != null) {
                     if(scmConverted.getAcrs().isContribute()) {
                         try {
+                            CompatibilityDataPlugin gdata = GlobalConfiguration.all().get(CompatibilityDataPlugin.class);
                             CompatabilityCompatible compatible = scmConverted.getAcrs().getConverter().convert(build.getAction(ConfigurationRotatorBuildAction.class));
                             listener.getLogger().println(ConfigurationRotator.LOGGERNAME + "Preparing to contribute data about compatability");
-                            build.getWorkspace().act(new RemoteCompatabilityContributor(compatible, GlobalConfiguration.all().get(CompatibilityDataPlugin.class).getProvider(), listener));
+                            FilePath fp = build.getWorkspace();
+                            if(fp != null && gdata != null) {
+                                fp.act(new RemoteCompatabilityContributor(compatible, gdata.getProvider(), listener));
+                            } else {
+                                LOGGER.log(Level.WARNING, "No workspace found");
+                            }
                         } catch (CompatibilityDataException dataex) {
                             listener.getLogger().println(dataex.getMessage());
                         } catch (Exception ex) {
                             listener.getLogger().println("Unknown error. See logs for more detail");
-                            logger.log(Level.WARNING, "Unknown error encountered while trying to add comptability data. Trace follows", ex);
+                            LOGGER.log(Level.WARNING, "Unknown error encountered while trying to add comptability data. Trace follows", ex);
                         }
                     }
                 }
@@ -87,7 +95,7 @@ public class ConfigurationRotatorPublisher extends Notifier {
                 out.println(ConfigurationRotator.LOGGERNAME + "Action was null, unable to set compatibility of configuration");
 
                 if (da != null) {
-                    logger.fine(da.toString());
+                    LOGGER.fine(da.toString());
                     if (!da.died()) {
                         hadNothingToDo(build);
                     }

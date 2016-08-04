@@ -3,7 +3,6 @@ package net.praqma.jenkins.configrotator.scm.git;
 import hudson.AbortException;
 import hudson.Extension;
 import hudson.FilePath;
-import hudson.Launcher;
 import hudson.model.AbstractBuild;
 import hudson.model.AbstractProject;
 import hudson.model.BuildListener;
@@ -41,13 +40,13 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
     }
 
     @Override
-    public Poller getPoller( AbstractProject<?, ?> project, Launcher launcher, FilePath workspace, TaskListener listener ) {
-        return new Poller(project, launcher, workspace, listener );
+    public Poller getPoller( AbstractProject<?, ?> project, FilePath workspace, TaskListener listener ) {
+        return new Poller(project, workspace, listener );
     }
 
     @Override
-    public Performer getPerform( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener ) throws IOException {
-        return new GitPerformer(build, launcher, workspace, listener);
+    public Performer getPerform( AbstractBuild<?, ?> build, FilePath workspace, BuildListener listener ) throws IOException {
+        return new GitPerformer(build, workspace, listener);
     }
 
     @Override
@@ -57,8 +56,8 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
     public class GitPerformer extends Performer<GitConfiguration> {
 
-        public GitPerformer( AbstractBuild<?, ?> build, Launcher launcher, FilePath workspace, BuildListener listener ) {
-            super( build, launcher, workspace, listener );
+        public GitPerformer( AbstractBuild<?, ?> build, FilePath workspace, BuildListener listener ) {
+            super( build, workspace, listener );
         }
 
         @Override
@@ -90,18 +89,19 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
 
     @Override
-    public void setConfigurationByAction( AbstractProject<?, ?> project, ConfigurationRotatorBuildAction action ) throws IOException {
+    public AbstractConfiguration setConfigurationByAction( AbstractProject<?, ?> project, ConfigurationRotatorBuildAction action ) throws IOException {
         GitConfiguration c = action.getConfiguration();
         if( c == null ) {
             throw new AbortException( ConfigurationRotator.LOGGERNAME + "Not a valid configuration" );
         } else {
             this.projectConfiguration = c;
             project.save();
+            return c;
         }
     }
 
     @Override
-    public boolean wasReconfigured( AbstractProject<?, ?> project ) {
+    public boolean wasReconfigured( AbstractProject<?, ?> project, TaskListener listener ) {
         ConfigurationRotatorBuildAction action = getLastResult( project, Git.class );
 
         if( action == null ) {
@@ -157,9 +157,14 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
         protected List<ConfigRotatorChangeLogEntry> getChangeLogEntries( GitConfiguration configuration, GitConfigurationComponent configurationComponent ) throws ConfigurationRotatorException {
             LOGGER.fine( "Change log entry, " + configurationComponent );
             try {
-                ConfigRotatorChangeLogEntry entry = build.getWorkspace().act( new ResolveChangeLog( configurationComponent.getName(), configurationComponent.getCommitId() ) );
-                LOGGER.fine("ENTRY: " + entry);
-                return Collections.singletonList( entry );
+                FilePath ws = build.getWorkspace();
+                if(ws != null) {
+                    ConfigRotatorChangeLogEntry entry = ws.act( new ResolveChangeLog( configurationComponent.getName(), configurationComponent.getCommitId() ) );
+                    LOGGER.fine("ENTRY: " + entry);
+                    return Collections.singletonList( entry );
+                } else {
+                    return Collections.EMPTY_LIST;
+                }
             } catch( Exception e ) {
                 throw new ConfigurationRotatorException( "Unable to resolve changelog " + configurationComponent.getCommitId(), e );
             }
@@ -172,7 +177,12 @@ public class Git extends AbstractConfigurationRotatorSCM implements Serializable
 
         RevCommit oldest = null;
         GitConfigurationComponent chosen = null;
-        GitConfiguration nconfig = ((GitConfiguration) configuration).clone();
+        GitConfiguration nconfig = null;
+        try {
+            nconfig = ((GitConfiguration) configuration).clone();
+        } catch (CloneNotSupportedException ex) {
+            throw new ConfigurationRotatorException(String.format("Unable to clone configuration: %s", configuration) );
+        }
 
         /* Find oldest commit, newer than current */
         for( GitConfigurationComponent config : nconfig.getList() ) {

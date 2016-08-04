@@ -20,29 +20,35 @@ import net.praqma.jenkins.configrotator.scm.contribute.dto.ClearCaseUCMConfigura
  * @author Mads
  */
 public class ConfigRotatorClearCaseConverterImpl implements ConfigRotatorCompatabilityConverter<ConfigurationRotatorBuildAction> {
-    
-    public ConfigRotatorClearCaseConverterImpl() { } 
-    
+
+    public ConfigRotatorClearCaseConverterImpl() { }
+
     @Override
     public CompatabilityCompatible convert(ConfigurationRotatorBuildAction t) {
         ClearCaseUCMConfiguration ccucmcomp = t.getConfiguration();
-        ClearCaseUCMConfigurationDTO config = ClearCaseUCMConfigurationDTO.fromConfiguration(ccucmcomp);         
-        boolean success = t.getBuild().getResult().isBetterOrEqualTo(Result.SUCCESS);
+        ClearCaseUCMConfigurationDTO config = ClearCaseUCMConfigurationDTO.fromConfiguration(ccucmcomp);
+        Result r = t.getBuild().getResult();
         
-        ClearCaseUCMConfigurationDTO configComponent = new ClearCaseUCMConfigurationDTO();
-        
-        //This is a new configuration. We need to add all components as changed
-        if(ccucmcomp.getChangedComponents().isEmpty()) {
-            configComponent.addAll(config);
-        } else {
-            //Changed components
-            List<AbstractConfigurationComponent> compp = ccucmcomp.getChangedComponents();
-            for(AbstractConfigurationComponent abcomp : compp ) {
-                configComponent.add(ClearCaseUCMConfigurationComponentDTO.fromComponent((ClearCaseUCMConfigurationComponent)abcomp));
+        if(r != null) {
+            boolean success = r.isBetterOrEqualTo(Result.SUCCESS);
+
+            ClearCaseUCMConfigurationDTO configComponent = new ClearCaseUCMConfigurationDTO();
+
+            //This is a new configuration. We need to add all components as changed
+            if(ccucmcomp.getChangedComponents().isEmpty()) {
+                configComponent.addAll(config);
+            } else {
+                //Changed components
+                List<AbstractConfigurationComponent> compp = ccucmcomp.getChangedComponents();
+                for(AbstractConfigurationComponent abcomp : compp ) {
+                    configComponent.add(ClearCaseUCMConfigurationComponentDTO.fromComponent((ClearCaseUCMConfigurationComponent)abcomp));
+                }
             }
+
+            ClearcaseUCMCompatability comp = new ClearcaseUCMCompatability(configComponent, Calendar.getInstance().getTime(), t.getBuild().getProject().getName(), success, config);
+            return comp;
+        } else {
+            return null;
         }
-        
-        ClearcaseUCMCompatability comp = new ClearcaseUCMCompatability(configComponent, Calendar.getInstance().getTime(), t.getBuild().getProject().getName(), success, config);         
-        return comp;
-    }     
+    }
 }
