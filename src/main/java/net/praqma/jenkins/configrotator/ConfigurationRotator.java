@@ -147,6 +147,9 @@ public class ConfigurationRotator extends SCM {
             LOGGER.log( Level.SEVERE, "Unable to create configuration", e );
             DiedBecauseAction da = new DiedBecauseAction( e.getMessage(), DiedBecauseAction.Die.die, acrs.getTargets() );
             build.addAction( da );
+            //We need to reset here.
+            reconfigure = false;
+            justConfigured = false;
             throw new AbortException( e.getMessage() );
         }
 
@@ -253,7 +256,12 @@ public class ConfigurationRotator extends SCM {
             } else {
                 LOGGER.fine( "Do actual polling" );
                 out.println( LOGGERNAME + "Getting next configuration" );
-                return poller.poll( lastAction );
+                //Final check. Was the last build a misconfiguration?
+                if(dieaction != null && dieaction.died()) {
+                    return PollingResult.NO_CHANGES;
+                } else {
+                    return poller.poll( lastAction );
+                }
             }
         } catch ( AbortException ex) {
             throw ex;

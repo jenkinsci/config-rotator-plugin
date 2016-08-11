@@ -39,7 +39,7 @@ public class ConfigRotatorProject {
 
     public ConfigRotatorProject reconfigure() {
 
-        targets = new ArrayList<AbstractTarget>();
+        targets = new ArrayList<>();
 
         crSCM.setConfiguration( null );
         crSCM.setTargets( targets );
@@ -50,7 +50,11 @@ public class ConfigRotatorProject {
 
     public ConfigRotatorProject addTarget( AbstractTarget target ) {
         targets.add( target );
+        return this;
+    }
 
+    public ConfigRotatorProject clearTargets() {
+        targets.clear();
         return this;
     }
 
@@ -60,5 +64,12 @@ public class ConfigRotatorProject {
 
     public static String getSafeName( String name ) {
         return name.replaceAll( "[^\\w]", "_" );
+    }
+
+    /**
+     * @return the crSCM
+     */
+    public AbstractConfigurationRotatorSCM getCrSCM() {
+        return crSCM;
     }
 }

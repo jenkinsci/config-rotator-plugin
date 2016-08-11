@@ -2,8 +2,10 @@ package net.praqma.jenkins.configrotator.functional.scm.git;
 
 import hudson.FilePath;
 import hudson.model.AbstractBuild;
+import hudson.model.AbstractProject;
 import hudson.model.FreeStyleProject;
 import hudson.model.Result;
+import hudson.triggers.SCMTrigger;
 import net.praqma.jenkins.configrotator.*;
 import net.praqma.jenkins.configrotator.scm.clearcaseucm.ClearCaseUCMTarget;
 import net.praqma.jenkins.configrotator.scm.git.Git;
@@ -21,6 +23,10 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.logging.Level;
+import org.apache.commons.io.FileUtils;
+import org.junit.After;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 public class GitTest {
 
@@ -57,7 +63,6 @@ public class GitTest {
                 checkTargets( new GitTarget( "test", git.getRepo(), "master", commit1.getName(), false ) ).
                 checkContent( new File( filePath, "text.txt" ), "1" ).
                 validate();
-        git.cleanup();
     }
 
     @Test
@@ -86,7 +91,6 @@ public class GitTest {
 
         SystemValidator<ClearCaseUCMTarget> val2 = new SystemValidator<ClearCaseUCMTarget>( build2 );
         val2.checkExpectedResult( Result.NOT_BUILT ).checkAction( false ).validate();
-        git.cleanup();
     }
 
 
@@ -118,7 +122,6 @@ public class GitTest {
 
         SystemValidator<ClearCaseUCMTarget> val3 = new SystemValidator<ClearCaseUCMTarget>( build3 );
         val3.checkExpectedResult( Result.NOT_BUILT ).validate();
-        git.cleanup();
     }
 
     @Test
@@ -144,6 +147,65 @@ public class GitTest {
                 checkTargets(new GitTarget("test", git.getRepo(), "master", commit1.getName(), false)).
                 checkContent(new File(filePath, "text.txt"), "1").
                 validate();
+    }
+
+    @Test
+    public void tagDeleted_Regression_JENKINS22533_GITHUB11() throws Exception {
+        File f = folder.newFolder();
+        git.initialize(f);
+        RevCommit commit1 = git.createCommit("text.txt", "1");
+        RevCommit commit2 = git.createCommit("text.txt", "2");
+        String tagName = "configRotator";
+        git.createTag(tagName);
+        RevCommit commit3 = git.createCommit("text.txt", "3");
+
+        ProjectBuilder builder = new ProjectBuilder(new Git(new ArrayList<GitTarget>())).setName("git-test-JENKINS22533");
+        ConfigRotatorProject project = builder.getProject();
+
+        GitTarget t = new GitTarget("test", git.getRepo(), "master", tagName, false);
+        project.addTarget(t);
+
+        AbstractBuild<?, ?> build = crRule.buildProject(project.getJenkinsProject(), false, null);
+        crRule.waitUntilNoActivityUpTo(60000);
+
+        //We've just reconfigured...use a non-existing illegal ref.
+        project.reconfigure().addTarget(new GitTarget("test", git.getRepo(), "master", "NOT_THERE", false));
+        //Update config
+        project.getJenkinsProject().save();
+
+        triggerProject(project.getJenkinsProject());
+        crRule.waitUntilNoActivityUpTo(60000);
+        //Start the build...with an invalid configuration (we were just reconfigured)
+        AbstractBuild<?,?> secondBuild = project.getJenkinsProject().getBuildByNumber(2);
+
+        triggerProject(project.getJenkinsProject());
+        crRule.waitUntilNoActivityUpTo(60000);
+        AbstractBuild<?,?> thirdBuild = project.getJenkinsProject().getBuildByNumber(3);
+
+        assertNull(String.format("Number of builds should be two, was not two. This is the console log for the extra build %s",
+                thirdBuild != null ? FileUtils.readFileToString(thirdBuild.getLogFile()) : "")
+                , thirdBuild);
+
+        project.reconfigure().addTarget(new GitTarget("test", git.getRepo(), "master", tagName, false));
+
+        triggerProject(project.getJenkinsProject());
+        crRule.waitUntilNoActivityUpTo(60000);
+
+        thirdBuild = project.getJenkinsProject().getBuildByNumber(3);
+        assertNotNull(thirdBuild);
+    }
+
+    public static void triggerProject(AbstractProject<?,?> project) throws Exception {
+        project.getTriggers().clear();
+        SCMTrigger scmTrigger = new SCMTrigger("@daily", true);
+        project.addTrigger(scmTrigger);
+        scmTrigger.start(project, true);
+        scmTrigger.new Runner().run();
+    }
+
+    @After
+    public void cleanUpGit() {
         git.cleanup();
     }
+
 }

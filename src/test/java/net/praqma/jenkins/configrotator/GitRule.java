@@ -13,7 +13,9 @@ import org.junit.runners.model.Statement;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 import java.util.logging.Logger;
+import org.eclipse.jgit.transport.RefSpec;
 
 /**
  * @author cwolfgang
@@ -59,6 +61,16 @@ public class GitRule implements TestRule {
         return git.tag().setName(tagName).call();
     }
 
+    public boolean tagExists(String tagname) throws GitAPIException  {
+        List<Ref> list = git.tagList().call();
+        for(Ref r : list) {
+            if(r.getName().equals(tagname)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public String getRepo() {
         return gitRepo.getDirectory().getAbsolutePath();
     }
@@ -81,4 +93,5 @@ public class GitRule implements TestRule {
             logger.info( " * " + f );
         }
     }
+    
 }

@@ -191,8 +191,6 @@ public abstract class AbstractConfigurationRotatorSCM implements Describable<Abs
                 out.println(" * " + c);
                 LOGGER.fine(" * " + c);
             }
-            out.println("");
-            LOGGER.fine("");
         } else {
             out.println(ConfigurationRotator.LOGGERNAME + "The configuration is null");
             LOGGER.fine("The configuration is null");

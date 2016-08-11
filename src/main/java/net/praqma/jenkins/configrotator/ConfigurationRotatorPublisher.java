@@ -96,6 +96,7 @@ public class ConfigurationRotatorPublisher extends Notifier {
 
                 if (da != null) {
                     LOGGER.fine(da.toString());
+                    out.println(da.toString());
                     if (!da.died()) {
                         hadNothingToDo(build);
                     }
