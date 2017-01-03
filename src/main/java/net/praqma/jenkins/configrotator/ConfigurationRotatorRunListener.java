@@ -109,43 +109,41 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
      * @param listener Jenkins listener
      */
     @Override
-    public void onCompleted( Run run, TaskListener listener ) {
+    public void onCompleted(Run run, TaskListener listener) {
         localListener = listener;
 
-        if(run instanceof AbstractBuild) { 
+        if (!(run instanceof AbstractBuild)) {
+            String runClassName = run.getClass().getSimpleName();
+            LOGGER.log(Level.INFO, String.format("Feed update skipped as run type '%s' is unsupported", runClassName));
+        } else {
             AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
-            if( build.getProject().getScm() instanceof ConfigurationRotator ) {
-
-                AbstractConfigurationRotatorSCM acscm = ((ConfigurationRotator)build.getProject().getScm()).getAcrs();
-                ConfigurationRotatorBuildAction action = build.getAction( ConfigurationRotatorBuildAction.class );
-                // if no action, build failed someway to set ConfigurationRotatorBuildAction, thus we can not 
+            if (build.getProject().getScm() instanceof ConfigurationRotator) {
+                AbstractConfigurationRotatorSCM crScm = ((ConfigurationRotator) build.getProject().getScm()).getAcrs();
+                ConfigurationRotatorBuildAction action = build.getAction(ConfigurationRotatorBuildAction.class);
+                // if no action, build failed someway to set ConfigurationRotatorBuildAction, thus we can not
                 // say anything about configuration.
-                if( action != null ) {
+                if (action != null) {
                     AbstractConfiguration configuration = action.getConfigurationWithOutCast();
                     List<AbstractConfigurationComponent> components = configuration.getList();
                     try {
-
-                        for( AbstractConfigurationComponent component : components ) {
-                            File feedFile = component.getFeedFile( acscm.getFeedPath() );                        
+                        for (AbstractConfigurationComponent component : components) {
+                            File feedFile = component.getFeedFile(crScm.getFeedPath());
                             Date updated = new Date();
-
-                            Feed feed = component.getFeed( feedFile, acscm.getFeedURL(), updated );
-                            Entry e = component.getFeedEntry( build, updated );
-
-                            feed.addEntry( e );
-
+                            Feed feed = component.getFeed(feedFile, crScm.getFeedURL(), updated);
+                            Entry e = component.getFeedEntry(build, updated);
+                            feed.addEntry(e);
                             feed.updated = updated;
-
-                            writeFeedToFile( feed, feedFile );
+                            writeFeedToFile(feed, feedFile);
                         }
-                    } catch( Exception fe ) {
-                        LOGGER.log( Level.SEVERE, "Feed error", fe );
-                        localListener.getLogger().println( "ConfigRotator RunListener caught excetption. Trace written to log.");
+                    } catch (Exception fe) {
+                        LOGGER.log(Level.SEVERE, "Feed error", fe);
+                        localListener.getLogger().println("ConfigRotator RunListener caught excetption. Trace written to log.");
                     }
                 }
             }
         }
     }
+
 
 
     /**
