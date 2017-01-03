@@ -112,35 +112,36 @@ public class ConfigurationRotatorRunListener extends RunListener<Run> {
     public void onCompleted( Run run, TaskListener listener ) {
         localListener = listener;
 
-        AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
-        if( build.getProject().getScm() instanceof ConfigurationRotator ) {
+        if(run instanceof AbstractBuild) { 
+            AbstractBuild<?, ?> build = (AbstractBuild<?, ?>) run;
+            if( build.getProject().getScm() instanceof ConfigurationRotator ) {
 
-            AbstractConfigurationRotatorSCM acscm = ((ConfigurationRotator)build.getProject().getScm()).getAcrs();
-            ConfigurationRotatorBuildAction action = build.getAction( ConfigurationRotatorBuildAction.class );
-            // if no action, build failed someway to set ConfigurationRotatorBuildAction, thus we can not
-            // say anything about configuration.
-            if( action != null ) {
-                AbstractConfiguration configuration = action.getConfigurationWithOutCast();
-                List<AbstractConfigurationComponent> components = configuration.getList();
+                AbstractConfigurationRotatorSCM acscm = ((ConfigurationRotator)build.getProject().getScm()).getAcrs();
+                ConfigurationRotatorBuildAction action = build.getAction( ConfigurationRotatorBuildAction.class );
+                // if no action, build failed someway to set ConfigurationRotatorBuildAction, thus we can not 
+                // say anything about configuration.
+                if( action != null ) {
+                    AbstractConfiguration configuration = action.getConfigurationWithOutCast();
+                    List<AbstractConfigurationComponent> components = configuration.getList();
+                    try {
 
-                try {
+                        for( AbstractConfigurationComponent component : components ) {
+                            File feedFile = component.getFeedFile( acscm.getFeedPath() );                        
+                            Date updated = new Date();
 
-                    for( AbstractConfigurationComponent component : components ) {
-                        File feedFile = component.getFeedFile( acscm.getFeedPath() );
-                        Date updated = new Date();
+                            Feed feed = component.getFeed( feedFile, acscm.getFeedURL(), updated );
+                            Entry e = component.getFeedEntry( build, updated );
 
-                        Feed feed = component.getFeed( feedFile, acscm.getFeedURL(), updated );
-                        Entry e = component.getFeedEntry( build, updated );
+                            feed.addEntry( e );
 
-                        feed.addEntry( e );
+                            feed.updated = updated;
 
-                        feed.updated = updated;
-
-                        writeFeedToFile( feed, feedFile );
+                            writeFeedToFile( feed, feedFile );
+                        }
+                    } catch( Exception fe ) {
+                        LOGGER.log( Level.SEVERE, "Feed error", fe );
+                        localListener.getLogger().println( "ConfigRotator RunListener caught excetption. Trace written to log.");
                     }
-                } catch( Exception fe ) {
-                    LOGGER.log( Level.SEVERE, "Feed error", fe );
-                    localListener.getLogger().println( "ConfigRotator RunListener caught excetption. Trace written to log.");
                 }
             }
         }
