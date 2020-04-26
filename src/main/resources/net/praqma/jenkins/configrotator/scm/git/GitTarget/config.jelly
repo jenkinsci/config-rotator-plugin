@@ -1,29 +1,19 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <tr>
-        <td>
-            Name <f:textbox field="name"/>
-        </td>
-        <td>
-            Branch
-            <f:textbox field="branch"/>
-        </td>
-        <td>
-            Repository
-            <f:textbox field="repository"/>
-        </td>
-        <td>
-            Commit
-            <f:textbox field="commitId"/>
-        </td>
-        <td>
-            <tr>
-                <td>
-                    Fixed
-                    <f:checkbox field="fixed"/>
-                </td>
-            </tr>
-        </td>
-    </tr>
+    <f:entry title="Name">
+        <f:textbox field="name"/>
+    </f:entry>
+    <f:entry title="Branch">
+        <f:textbox field="branch"/>
+    </f:entry>
+    <f:entry title="Repository">
+        <f:textbox field="repository"/>
+    </f:entry>
+    <f:entry title="Commit">
+        <f:textbox field="commitId"/>
+    </f:entry>
+    <f:entry>
+        <f:checkbox field="fixed" title="Fixed"/>
+    </f:entry>
     <f:repeatableDeleteButton/>
 </j:jelly>
