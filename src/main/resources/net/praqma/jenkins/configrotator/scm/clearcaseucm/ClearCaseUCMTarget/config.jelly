@@ -1,22 +1,13 @@
 <?jelly escape-by-default='true'?>
 <j:jelly xmlns:j="jelly:core" xmlns:f="/lib/form">
-    <tr>
-        <td>
-            Baseline
-            <f:textbox field="baselineName"/>
-        </td>
-        <td>
-            Promotion level
-            <f:select field="level"/>
-        </td>
-        <td>
-            <tr>
-                <td>
-                    Fixed
-                    <f:checkbox field="fixed"/>
-                </td>
-            </tr>
-        </td>
-    </tr>
+    <f:entry title="Baseline">
+        <f:textbox field="baselineName"/>
+    </f:entry>
+    <f:entry title="Promotion level">
+        <f:select field="level"/>
+    </f:entry>
+    <f:entry>
+        <f:checkbox field="fixed" title="Fixed"/>
+    </f:entry>
     <f:repeatableDeleteButton/>
 </j:jelly>
