@@ -3,10 +3,10 @@ package net.praqma.jenkins.configrotator.scm;
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
-import hudson.util.Digester2;
-import org.apache.commons.digester.Digester;
+import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
@@ -26,7 +26,18 @@ public class ConfigRotatorChangeLogParser extends ChangeLogParser {
 
     @Override
     public ChangeLogSet<? extends ChangeLogSet.Entry> parse( AbstractBuild build, File changelogFile ) throws IOException, SAXException {
-        Digester digester = new Digester2();
+        Digester digester = new Digester();
+        if (!Boolean.getBoolean(this.getClass().getName() + ".UNSAFE")) {
+            digester.setXIncludeAware(false);
+            try {
+                digester.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+                digester.setFeature("http://xml.org/sax/features/external-general-entities", false);
+                digester.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+                digester.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            } catch (ParserConfigurationException ex) {
+                throw new SAXException("Failed to securely configure xml digester parser", ex);
+            }
+        }
         List<ConfigRotatorChangeLogEntry> changesetList = new ArrayList<>();
         digester.push( changesetList );
         digester.addObjectCreate( "*/changelog/commit", ConfigRotatorChangeLogEntry.class );

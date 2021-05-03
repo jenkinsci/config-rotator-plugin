@@ -63,7 +63,7 @@
 
         <repository>
             <id>jgit-repository</id>
-            <url>http://download.eclipse.org/jgit/maven</url>
+            <url>https://repo.eclipse.org/content/repositories/jgit-releases/</url>
         </repository>
     </repositories>
 
@@ -84,6 +84,13 @@
             <activation>
                 <activeByDefault>false</activeByDefault>
             </activation>
+            <dependencies>
+                <dependency>
+                    <groupId>org.apache.commons</groupId>
+                    <artifactId>commons-digester3</artifactId>
+                    <version>3.2</version>
+                </dependency>
+            </dependencies>
             <build>
                 <plugins>
                     <plugin>
