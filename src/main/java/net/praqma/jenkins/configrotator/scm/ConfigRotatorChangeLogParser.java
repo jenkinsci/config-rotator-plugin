@@ -3,7 +3,7 @@ package net.praqma.jenkins.configrotator.scm;
 import hudson.model.AbstractBuild;
 import hudson.scm.ChangeLogParser;
 import hudson.scm.ChangeLogSet;
-import org.apache.commons.digester.Digester;
+import org.apache.commons.digester3.Digester;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
